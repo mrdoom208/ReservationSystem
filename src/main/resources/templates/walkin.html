@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Restaurant Reservation</title>
+    <link rel="stylesheet" href="romaticcssbaboy.css">
+
+</head>
+<body>
+<!-- Your visual elements -->
+<div class="overlay"></div>
+<div class="patch"></div>
+
+<div class="reservation-container">
+    <div class="form-box">
+        <h1>WALK-IN RESERVATION</h1>
+
+        <form id="infoForm" action="/reserve" method="post">
+            <label for="Name">Customer's Name <span>*</span></label>
+            <input type="text" id="Name" name="Name" placeholder="Enter your name" required>
+
+            <label for="Phone">Phone number <span>*</span></label>
+            <input type="tel" id="Phone" name="Phone" placeholder="Enter phone number" required>
+
+            <label for="TableCapacity">Seating Capacity <span>*</span></label>
+            <input type="number" id="TableCapacity" name="Pax" placeholder="Number of people" min="1" required>
+
+            <label>Preferred Space (optional)</label>
+            <div class="radio-group">
+                <label><input type="radio" name="Prefer" value="Indoor"> Indoor</label>
+                <label><input type="radio" name="Prefer" value="Outdoor"> Outdoor</label>
+            </div>
+
+            <label for="Email">Email (optional):</label>
+            <input type="email" id="Email" name="Email" placeholder="you@example.com">
+            <label style="margin-top:12px;">
+                <input type="checkbox" id="agree" name="agree"> I agree to the Terms and Conditions
+            </label>
+
+            <button id="proceedBtn" type="submit" disabled>Proceed</button>
+        </form>
+    </div>
+</div>
+
+<script src="script.js"></script>
+
+
+</body>
+</html>

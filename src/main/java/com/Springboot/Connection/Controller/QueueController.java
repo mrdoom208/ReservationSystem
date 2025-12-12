@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 
 @Controller
 public class QueueController {
@@ -54,6 +55,8 @@ public class QueueController {
             LocalDate pendingDate = reservation.getDate();   // e.g., 2025-12-12
             LocalTime pendingTime = reservation.getReservationPendingtime();   // e.g., 23:58:00
             LocalDateTime pendingDateTime = LocalDateTime.of(pendingDate, pendingTime);
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MMMM dd, yyyy  hh:mm a");
+            String readablePendingDateTime = pendingDateTime.format(formatter);
 
             model.addAttribute("customerName", reservation.getCustomer().getName());
             model.addAttribute("customerPhone", reservation.getCustomer().getPhone());
@@ -63,6 +66,7 @@ public class QueueController {
             model.addAttribute("preferredSpace", reservation.getPrefer() != null ? reservation.getPrefer() : "");
             model.addAttribute("estimatedTime", estimatedTimeStr);
             model.addAttribute("pendingDateTime", pendingDateTime.toString());
+            model.addAttribute("created", readablePendingDateTime);
 
         } else {
             // Default placeholders

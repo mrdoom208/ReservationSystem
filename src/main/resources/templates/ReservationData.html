@@ -40,7 +40,7 @@
                 <div class="timer-section">
                     <div class="countdown" id="countup">00:00:00</div>
                     <div class="estimated-time">
-                        ESTIMATED TIME: <span th:text="${estimatedTime}">00:00:00</span>
+                         Created: <span th:text="${created}">00:00:00</span>
                     </div>
                 </div>
             </div>
@@ -161,6 +161,6 @@
     setInterval(updateCountUp, 1000);
     updateCountUp();
 </script>
-<!--<script src="/js/script.js"></script>-->
+<script src="/js/script.js"></script>
     </body>
 </html>

@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" href="/css/romaticcssbaboy.css">
+</head>
+<body>
+<div class="patch"></div>
+<a id="Register" href="/">Create Reservation</a>
+
+<div class="login-box">
+    <form id="login" action="/login" method="post">
+        <h1>Customer Login</h1>
+        <p th:text="${errorMessage}"></p>
+        <Label for="Phone" >Phone Number <span>*</span></Label>
+        <input type="tel" id="Phone" name="phone" placeholder="Enter Registered Phone Number" required/>
+
+        <label for="Reference">Reservation Reference <span>*</span></label>
+        <input type="text" id="Reference" name="reference" placeholder="Enter Reference Code" required/>
+
+        <button type="submit" id="open">Login</button>
+
+    </form>
+</div>
+
+<script src="/js/script.js"></script>
+</body>
+</html>

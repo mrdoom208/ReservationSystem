@@ -1,15 +1,17 @@
 package com.Springboot.Connection.Controller;
 
-import com.Springboot.Connection.Config.CustomerReservationDTO;
-import com.Springboot.Connection.model.CustomerReservation;
-import com.Springboot.Connection.repository.CustomerReservationRepository;
+import com.Springboot.Connection.dto.CustomerReservationDTO;
+import com.Springboot.Connection.model.Customer;
+import com.Springboot.Connection.model.Reservation;
+import com.Springboot.Connection.repository.CustomerRepository;
+import com.Springboot.Connection.repository.ReservationRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -17,7 +19,11 @@ import java.time.LocalTime;
 @Controller
 public class ReservationController {
     @Autowired
-    private CustomerReservationRepository repository;
+    private ReservationRepository reservationRepository;
+    @Autowired
+    private CustomerRepository customerRepository;
+
+
 
     @Autowired
     private SimpMessagingTemplate messagingTemplate;
@@ -29,22 +35,48 @@ public class ReservationController {
     }
 
 
+    @RequestMapping("/loginpage")
+    public String showLogin(@RequestParam(required = false) String error,
+                            @RequestParam(required = false) String logout,
+                            @RequestParam(required = false) String newreservation, Model model){
+        if (error != null) {
+            model.addAttribute("errorMessage", error);
+        }
+        if(logout != null){
+            model.addAttribute("errorMessage",logout);
+        }
+        if(newreservation != null){
+            model.addAttribute("errorMessage", newreservation);
 
-    @PostMapping("/reserve")
-    public String saveReservation(CustomerReservation reservation) {
+        }
 
-        reservation.setReference(String.format("RSV-%05d", repository.count()+1));
+        return  "Login";
+    }
+
+
+    @ PostMapping("/reserve")
+    public String saveReservation(CustomerReservationDTO reservationDTO) {
+        Customer newCustomer = new Customer();
+        newCustomer.setEmail(reservationDTO.getEmail());
+        newCustomer.setName(reservationDTO.getName());
+        newCustomer.setPhone(reservationDTO.getPhone());
+        customerRepository.save(newCustomer);
+
+        Reservation reservation = new Reservation();
+        reservation.setPrefer(reservationDTO.getPrefer());
+        reservation.setReference(String.format("RSV-%05d", reservationRepository.count()+1));
+        reservation.setPax(reservationDTO.getPax());
         reservation.setDate(LocalDate.now());
         reservation.setStatus("Pending");
         reservation.setReservationPendingtime(LocalTime.now());
-        repository.save(reservation);
-        System.out.println(reservation);
+        reservation.setCustomer(newCustomer);
+        reservationRepository.save(reservation);
 
 
         CustomerReservationDTO dto = new CustomerReservationDTO();
-        dto.setName(reservation.getName());
-        dto.setPhone(reservation.getPhone());
-        dto.setTableCapacity(reservation.getPax());
+        dto.setName(dto.getName());
+        dto.setPhone(dto.getPhone());
+        dto.setPax(dto.getPax());
 
         System.out.println("Sending WebSocket message for reservation: " + dto);
 
@@ -52,6 +84,6 @@ public class ReservationController {
         messagingTemplate.convertAndSend("/topic/forms", dto);
 
 
-        return "redirect:/success.html"; // after saving, redirect to success page
+        return "redirect:/loginpage?newreservation=New Reservation Created Successfully"; // after saving, redirect to success page
     }
 }

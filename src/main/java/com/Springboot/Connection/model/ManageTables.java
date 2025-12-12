@@ -9,7 +9,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
-import java.sql.Time;
+
 import java.time.LocalTime;
 import java.util.List;
 
@@ -35,7 +35,7 @@ public class ManageTables {
     
     
     @OneToMany(mappedBy = "table")
-    private List<CustomerReservation> reservations;
+    private List<Reservation> reservations;
     
     
     

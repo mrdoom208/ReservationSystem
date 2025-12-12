@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Restaurant Queue Display</title>
+    <link rel="stylesheet" href="/css/ReservationData.css">
+</head>
+<body>
+<div class="top-right-buttons">
+    <button id="changeDetailsButton" onclick="openModal()" >Change Details</button>
+    <a id="logoutButton" href="/logout">Logout</a>
+
+
+</div>
+    <div class="bg-decoration bg-decoration-1"></div>
+    <div class="bg-decoration bg-decoration-2"></div>
+
+    <div class="container">
+        <!-- Clock Icon -->
+        <div class="clock-icon">
+
+        </div>
+
+        <!-- Main Card -->
+        <div class="main-card">
+            <div class="content-grid">
+                <!-- Customer Info -->
+                <div class="customer-info">
+                    <div class="info-item">NAME: <span th:text="${customerName}">Loading...</span></div>
+                    <div class="info-item">PHONE: <span th:text="${customerPhone}">Loading...</span></div>
+                    <div class="info-item">REFERENCE: <span th:text="${reference}">Loading...</span></div>
+                    <div class="info-item">QUEUE: <span th:text="${queueNumber}">Loading...</span></div>
+                    <div class="info-item">SEATING CAPACITY: <span th:text="${seatingCapacity}">Loading...</span> Person</div>
+                    <div class="info-item">PREFERRED SPACE: <span th:text="${preferredSpace}">Loading...</span></div>
+
+                </div>
+
+                <!-- Timer Section -->
+                <div class="timer-section">
+                    <div class="countdown" id="countup">00:00:00</div>
+                    <div class="estimated-time">
+                        ESTIMATED TIME: <span th:text="${estimatedTime}">00:00:00</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Progress Bar -->
+        <div class="progress-bar">
+            <div class="progress-segment"></div>
+            <div class="progress-segment"></div>
+            <div class="progress-segment"></div>
+            <div class="progress-segment"></div>
+            <div class="progress-segment"></div>
+            <div class="progress-segment"></div>
+            <div class="progress-segment"></div>
+            <div class="progress-segment"></div>
+            <div class="progress-segment"></div>
+            <div class="progress-segment"></div>
+            <div class="progress-segment"></div>
+            <div class="progress-segment"></div>
+            <div class="progress-segment"></div>
+            <div class="progress-segment"></div>
+            <div class="progress-segment"></div>
+            <div class="progress-segment"></div>
+            <div class="progress-segment"></div>
+            <div class="progress-segment"></div>
+            <div class="progress-segment"></div>
+            <div class="progress-segment"></div>
+            <div class="progress-segment"></div>
+            <div class="progress-segment"></div>
+            <div class="progress-segment"></div>
+            <div class="progress-segment"></div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="modalOverlay" onclick="closeModalOnOverlay(event)">
+        <div class="modal-container" onclick="event.stopPropagation()">
+            <!-- Modal Header -->
+            <div class="modal-header">
+                <button class="close-button" onclick="closeModal()">&times;</button>
+                <div class="modal-title">Change Details</div>
+                <div class="modal-subtitle">Update your reservation information</div>
+            </div>
+
+            <!-- Modal Body -->
+            <div class="modal-body">
+                <form id="changeDetailsForm" onsubmit="handleSubmit(event)">
+                    <div class="form-group">
+                        <label class="form-label" for="customerName">Name</label>
+                        <input type="text" id="customerName" class="form-input" placeholder="Enter your name" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="customerPhone">Phone Number</label>
+                        <input type="tel" id="customerPhone" class="form-input" placeholder="Enter your phone number" required>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label" for="seatingCapacity">Seating Capacity</label>
+                            <select id="seatingCapacity" class="form-select" required>
+                                <option value="">Select...</option>
+                                <option value="1">1 Person</option>
+                                <option value="2">2 Persons</option>
+                                <option value="3">3 Persons</option>
+                                <option value="4">4 Persons</option>
+                                <option value="5">5 Persons</option>
+                                <option value="6">6 Persons</option>
+                                <option value="7">7 Persons</option>
+                                <option value="8">8 Persons</option>
+                                <option value="8+">8+ Persons</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label" for="preferredSpace">Preferred Space</label>
+                            <select id="preferredSpace" class="form-select" required>
+                                <option value="">Select...</option>
+                                <option value="Indoor">Indoor</option>
+                                <option value="Outdoor">Outdoor</option>
+                                <option value="Window Seat">Window Seat</option>
+                                <option value="Private Room">Private Room</option>
+                            </select>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Modal Footer -->
+            <div class="modal-footer">
+                <button type="button" class="btn btn-cancel" onclick="closeModal()">Cancel</button>
+                <button type="submit" class="btn btn-submit" form="changeDetailsForm">Save Changes</button>
+            </div>
+        </div>
+    </div>
+<script th:inline="javascript">
+    const pendingTimeStr = [[${pendingDateTime}]]; // Thymeleaf replaces this
+    console.log("Pending DateTime string from backend:", pendingTimeStr);
+
+    const startTime = new Date(pendingTimeStr);
+    console.log("Parsed JS Date object:", startTime);
+
+    const countupElement = document.getElementById("countup");
+
+    function updateCountUp() {
+        const now = new Date();
+        const diff = now - startTime;
+
+        const hours = Math.floor(diff / 1000 / 3600);
+        const minutes = Math.floor((diff / 1000 % 3600) / 60);
+        const seconds = Math.floor((diff / 1000) % 60);
+
+        countupElement.textContent =
+            String(hours).padStart(2,'0') + ":" +
+            String(minutes).padStart(2,'0') + ":" +
+            String(seconds).padStart(2,'0');
+    }
+
+    setInterval(updateCountUp, 1000);
+    updateCountUp();
+</script>
+<!--<script src="/js/script.js"></script>-->
+    </body>
+</html>

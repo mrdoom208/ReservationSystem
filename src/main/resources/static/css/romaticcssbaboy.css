@@ -245,7 +245,7 @@ button:not(:disabled):hover {
 .login-box input[type="text"],
 .login-box input[type="tel"],
 .login-box input[type="number"],
-.login-box input[type="email"] {
+.login-box input[type="email"],{
     width: 100%;
     padding: 10px;
     border: none;
@@ -254,6 +254,32 @@ button:not(:disabled):hover {
     background: rgba(255, 255, 255, 0.2);
     color: white;
     font-size: 0.95em;
+}
+.capacity-select{
+    width: 100%;
+    padding: 10px;
+    border: none;
+    border-radius: 6px;
+    outline: none;
+    background: #333; /* semi-transparent background */
+    color: white; /* text color */
+    font-size: 0.95em;
+    -webkit-appearance: none; /* remove default arrow in WebKit browsers */
+    -moz-appearance: none; /* remove default arrow in Firefox */
+    appearance: none; /* remove default arrow in modern browsers */
+    cursor: pointer;
+}
+
+/* Optional: add a custom arrow using background */
+.capacity-select{
+    background-image: url('data:image/svg+xml;utf8,<svg fill="white" height="10" viewBox="0 0 10 5" xmlns="http://www.w3.org/2000/svg"><polygon points="0,0 5,5 10,0"/></svg>');
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    background-size: 10px 5px;
+}
+.capacity-select .option {
+    background-color: #333; /* dark background for options */
+    color: white;           /* text color */
 }
 
 /* Radio buttons */

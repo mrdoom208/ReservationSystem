@@ -121,6 +121,7 @@
             font-weight: bold;
             color: #1f2937;
             letter-spacing: 0.5px;
+            text-transform: uppercase;
         }
 
         .timer-section {
@@ -160,7 +161,7 @@
         }
 
         /* Responsive Design */
-        @media (max-width: 768px) {
+        @media (max-width: 810px) {
             .clock-icon {
                 padding: 20px;
                 top: -30px;
@@ -466,4 +467,47 @@
                 height: 32px;
                 font-size: 20px;
             }
+        }
+
+    .status-badge {
+    }
+
+
+
+
+
+        .status-Complete {
+            color: #2a4d2a !important;
+        }
+
+        .status-Occupied {
+            color: #5a1e1e;
+        }
+
+        .status-Reserved {
+            color: #7A5A00;
+        }
+
+        .status-Confirm {
+            color: #2196F3;
+        }
+
+        .status-Pending {
+            color: #455A64;
+        }
+
+        .status-Seated {
+            color: #2E7D32;
+        }
+
+        .status-Cancelled {
+            color: #D32F2F;
+        }
+
+        .status-No-Show {
+            color: #9C27B0;
+        }
+
+        .status-text {
+            font-weight: 600;
         }

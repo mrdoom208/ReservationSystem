@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Restaurant Queue Display</title>
+    <link rel="icon" type="image/png" sizes="16x16" href="/img/LogoRound.png">
     <link rel="stylesheet" href="/css/ReservationData.css">
 </head>
 <body>
@@ -33,7 +34,8 @@
                     <div class="info-item">QUEUE: <span th:text="${queueNumber}">Loading...</span></div>
                     <div class="info-item">SEATING CAPACITY: <span th:text="${seatingCapacity}">Loading...</span> Person</div>
                     <div class="info-item">PREFERRED SPACE: <span th:text="${preferredSpace}">Loading...</span></div>
-
+                    <div class="info-item">STATUS: <span th:text="${status}"
+                                                         th:class="'status-badge status-'+ ${#strings.replace(status,' ','-')}">Loading...</span></div>
                 </div>
 
                 <!-- Timer Section -->
@@ -86,21 +88,21 @@
 
             <!-- Modal Body -->
             <div class="modal-body">
-                <form id="changeDetailsForm" onsubmit="handleSubmit(event)">
+                <form id="changeDetailsForm" th:action="@{/updateCustomer}" method="post">
                     <div class="form-group">
                         <label class="form-label" for="customerName">Name</label>
-                        <input type="text" id="customerName" class="form-input" placeholder="Enter your name" required>
+                        <input type="text" id="customerName" name="customerName" class="form-input" placeholder="Enter your name" th:value="${customerName}" required>
                     </div>
 
                     <div class="form-group">
                         <label class="form-label" for="customerPhone">Phone Number</label>
-                        <input type="tel" id="customerPhone" class="form-input" placeholder="Enter your phone number" required>
+                        <input type="tel" id="customerPhone" name="customerPhone" class="form-input" placeholder="Enter your phone number" th:value="${customerPhone}" required>
                     </div>
 
                     <div class="form-row">
                         <div class="form-group">
                             <label class="form-label" for="seatingCapacity">Seating Capacity</label>
-                            <select id="seatingCapacity" class="form-select" required>
+                            <select id="seatingCapacity" name="seatingCapacity" class="form-select" required>
                                 <option value="">Select...</option>
                                 <option value="1">1 Person</option>
                                 <option value="2">2 Persons</option>
@@ -110,18 +112,17 @@
                                 <option value="6">6 Persons</option>
                                 <option value="7">7 Persons</option>
                                 <option value="8">8 Persons</option>
-                                <option value="8+">8+ Persons</option>
+                                <option value="9">9 Persons</option>
+                                <option value="10">10 Persons</option>
                             </select>
                         </div>
 
                         <div class="form-group">
                             <label class="form-label" for="preferredSpace">Preferred Space</label>
-                            <select id="preferredSpace" class="form-select" required>
+                            <select id="preferredSpace" name="preferredSpace" class="form-select" required>
                                 <option value="">Select...</option>
                                 <option value="Indoor">Indoor</option>
                                 <option value="Outdoor">Outdoor</option>
-                                <option value="Window Seat">Window Seat</option>
-                                <option value="Private Room">Private Room</option>
                             </select>
                         </div>
                     </div>
@@ -136,17 +137,24 @@
         </div>
     </div>
 <script th:inline="javascript">
-    const pendingTimeStr = [[${pendingDateTime}]]; // Thymeleaf replaces this
-    console.log("Pending DateTime string from backend:", pendingTimeStr);
-
+    const status = [[${status}]];
+    const pendingTimeStr = [[${pendingDateTime}]];
+    const completeTimeStr = [[${completeDateTime}]];
     const startTime = new Date(pendingTimeStr);
-    console.log("Parsed JS Date object:", startTime);
-
     const countupElement = document.getElementById("countup");
 
     function updateCountUp() {
-        const now = new Date();
-        const diff = now - startTime;
+        let diff;
+
+        if(status === 'Complete' && completeTimeStr) {
+            // Show difference between pending and complete
+            const completeTime = new Date(completeTimeStr);
+            diff = completeTime - startTime;
+        } else {
+            // Normal count-up from pending
+            const now = new Date();
+            diff = now - startTime;
+        }
 
         const hours = Math.floor(diff / 1000 / 3600);
         const minutes = Math.floor((diff / 1000 % 3600) / 60);
@@ -158,7 +166,12 @@
             String(seconds).padStart(2,'0');
     }
 
-    setInterval(updateCountUp, 1000);
+    // Only update every second if not complete
+    if(status !== 'Complete') {
+        setInterval(updateCountUp, 1000);
+    }
+
+    // Initial update
     updateCountUp();
 </script>
 <script src="/js/script.js"></script>

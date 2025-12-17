@@ -84,6 +84,6 @@ public class ReservationController {
         messagingTemplate.convertAndSend("/topic/forms", dto);
 
 
-        return "redirect:/loginpage?newreservation=New Reservation Created Successfully"; // after saving, redirect to success page
+        return "redirect:/loginpage?newreservation=New Reservation Created Successfully";
     }
 }

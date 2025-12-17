@@ -55,6 +55,10 @@ public class QueueController {
             LocalDate pendingDate = reservation.getDate();   // e.g., 2025-12-12
             LocalTime pendingTime = reservation.getReservationPendingtime();   // e.g., 23:58:00
             LocalDateTime pendingDateTime = LocalDateTime.of(pendingDate, pendingTime);
+            LocalDateTime completeDateTime = null;
+            if (reservation.getReservationCompletetime() != null){
+                completeDateTime = LocalDateTime.of(reservation.getDate(),reservation.getReservationCompletetime());
+            }
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MMMM dd, yyyy  hh:mm a");
             String readablePendingDateTime = pendingDateTime.format(formatter);
 
@@ -64,8 +68,9 @@ public class QueueController {
             model.addAttribute("queueNumber", position);
             model.addAttribute("seatingCapacity", reservation.getPax());
             model.addAttribute("preferredSpace", reservation.getPrefer() != null ? reservation.getPrefer() : "");
-            model.addAttribute("estimatedTime", estimatedTimeStr);
+            model.addAttribute("status", reservation.getStatus());
             model.addAttribute("pendingDateTime", pendingDateTime.toString());
+            model.addAttribute("completeDateTime", reservation.getReservationCompletetime() != null ? completeDateTime.toString() : "") ;
             model.addAttribute("created", readablePendingDateTime);
 
         } else {
@@ -89,6 +94,30 @@ public class QueueController {
 
         // Redirect to login page
         return "redirect:/loginpage?logout=You have Successfully logged out";
+    }
+
+    @PostMapping("/updateCustomer")
+    public String updateCustomer(@RequestParam String customerName,@RequestParam String customerPhone,@RequestParam String seatingCapacity,@RequestParam String preferredSpace, HttpSession session) {
+        String phone = (String) session.getAttribute("phone");
+        String reference = (String) session.getAttribute("reference");
+
+        if (phone == null || reference == null) {
+            // session expired or user not logged in
+            return "redirect:/loginpage";
+        }
+
+        Reservation reservation = reservationRepository.findByCustomerPhoneAndReference(phone, reference);
+        if (reservation != null) {
+            // Update the customer name
+            reservation.getCustomer().setName(customerName);
+            reservation.getCustomer().setPhone(customerPhone);
+            reservation.setPax(Integer.parseInt(seatingCapacity));
+            reservation.setPrefer(preferredSpace);
+            reservationRepository.save(reservation); // save the reservation (cascades to customer if mapped)
+            session.setAttribute("phone", customerPhone);
+
+        }
+        return "redirect:/queue"; // Redirect after successful update
     }
 
 

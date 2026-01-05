@@ -1,6 +1,7 @@
 package com.Springboot.Connection.Controller;
 
 import com.Springboot.Connection.dto.CustomerReservationDTO;
+import com.Springboot.Connection.dto.WebUpdateDTO;
 import com.Springboot.Connection.model.Customer;
 import com.Springboot.Connection.model.Reservation;
 import com.Springboot.Connection.repository.CustomerRepository;
@@ -31,7 +32,7 @@ public class ReservationController {
     @RequestMapping("/")
     public String showForm() {
 
-        return "walkin";
+        return "Registration";
     }
 
 
@@ -75,15 +76,19 @@ public class ReservationController {
         reservationRepository.save(reservation);
 
 
-        CustomerReservationDTO dto = new CustomerReservationDTO();
-        dto.setName(dto.getName());
-        dto.setPhone(dto.getPhone());
-        dto.setPax(dto.getPax());
+        WebUpdateDTO dto = new WebUpdateDTO();
+        dto.setCode("NEW_RESERVATION");
+        dto.setMessage(
+                "New reservation from " + reservationDTO.getName()
+                        + " (" + reservationDTO.getPax() + " pax)"
+                        + " | Ref: " + reservation.getReference()
+                        + " has been added"
+        );
 
-        System.out.println("Sending WebSocket message for reservation: " + dto);
 
 
         messagingTemplate.convertAndSend("/topic/forms", dto);
+        System.out.println(dto.getCode()+dto.getMessage());
 
 
         return "redirect:/loginpage?newreservation=New Reservation Created Successfully";

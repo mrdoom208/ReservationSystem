@@ -1,0 +1,19 @@
+package com.Springboot.Connection.Config;
+
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.stereotype.Component;
+
+@Component
+public class WebSocketBroadcaster {
+
+    private static SimpMessagingTemplate template;
+
+    @Autowired
+    public WebSocketBroadcaster(SimpMessagingTemplate template) {
+        WebSocketBroadcaster.template = template;
+    }
+
+
+}

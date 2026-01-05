@@ -4,12 +4,11 @@
  */
 package com.Springboot.Connection.model;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
+import com.Springboot.Connection.model.Customer;
+import com.Springboot.Connection.model.ManageTables;
+import jakarta.persistence.*;
+
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalTime;
 
@@ -29,13 +28,16 @@ public class Reservation {
     private String status;
     private String reference;
     private LocalDate date;
-    private double revenue;
+
+    @Column(precision = 19, scale = 2)
+    private BigDecimal revenue;
 
     private LocalTime reservationPendingtime;
     private LocalTime reservationConfirmtime;
     private LocalTime reservationCancelledtime;
     private LocalTime reservationSeatedtime;
     private LocalTime reservationCompletetime;
+    private LocalTime reservationNoshowtime;
 
     @ManyToOne
     @JoinColumn(name = "customer_id", nullable = false)
@@ -81,8 +83,8 @@ public class Reservation {
         this.status = status;
     }
 
-    public double getRevenue(){ return revenue;}
-    public void setRevenue(double revenue){this.revenue = revenue;}
+    public BigDecimal getRevenue(){ return revenue;}
+    public void setRevenue(BigDecimal revenue){this.revenue = revenue;}
 
     public String getReference() {
         return reference;
@@ -122,6 +124,13 @@ public class Reservation {
 
     public void setReservationCancelledtime(LocalTime reservationCancelledtime) {
         this.reservationCancelledtime = reservationCancelledtime;
+    }
+    public LocalTime getReservationNoshowtime() {
+        return reservationNoshowtime;
+    }
+
+    public void setReservationNoshowtime(LocalTime reservationnoshowtime) {
+        this.reservationNoshowtime = reservationnoshowtime;
     }
 
     public LocalTime getReservationSeatedtime() {

@@ -4,6 +4,9 @@ import com.Springboot.Connection.model.Reservation;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
+import java.time.LocalDate;
+import java.util.List;
+
 public interface ReservationRepository extends JpaRepository<Reservation, Long> {
 
     Reservation findByCustomerPhoneAndReference(String phone, String reference);
@@ -13,4 +16,6 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
             "AND r.reservationPendingtime < :time")
     long countAhead(java.time.LocalTime time);
 
+    List<Reservation> findAllByStatus(String Status);
+    void deleteByDateBefore(LocalDate cutoffDate);
 }

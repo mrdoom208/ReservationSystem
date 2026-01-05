@@ -1,12 +1,3 @@
-      const agree = document.getElementById('agree');
-      const proceedBtn = document.getElementById('submit');
-      const form = document.getElementById('infoForm');
-
-      // Enable button if checkbox checked
-      agree.addEventListener('change', () => {
-        proceedBtn.disabled = !agree.checked;
-      });
-
 ///////////////////////////////////////////////////////
 function openModal() {
             document.getElementById('modalOverlay').classList.add('active');
@@ -29,3 +20,4 @@ function openModal() {
                     }
                 });
 ////////////////////////////////////////////////////////////
+

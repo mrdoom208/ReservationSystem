@@ -41,13 +41,15 @@ public class ReservationController {
                             @RequestParam(required = false) String newreservation, Model model){
         if (error != null) {
             model.addAttribute("errorMessage", error);
+            model.addAttribute("status","error");
         }
         if(logout != null){
             model.addAttribute("errorMessage",logout);
+            model.addAttribute("status","success");
         }
         if(newreservation != null){
             model.addAttribute("errorMessage", newreservation);
-
+            model.addAttribute("status","success");
         }
 
         return  "Login";

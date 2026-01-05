@@ -289,7 +289,13 @@ button:not(:disabled):hover {
     gap: 15px;
     font-size: 0.9em;
 }
+p .success {
+    color: #2e7d32;
+}
 
+p .error {
+    color: #c62828;
+}
 /* Button */
 .login-box #open {
     width: 100%;

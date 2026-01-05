@@ -69,6 +69,14 @@ body {
     box-shadow: 0 0 8px rgba(255, 77, 77, 0.6);
 }
 
+.success {
+    color: #2e7d32;
+}
+
+.error {
+    color: #c62828;
+}
+
 /* ============ BUTTON ============ */
 #open {
     width: 100%;

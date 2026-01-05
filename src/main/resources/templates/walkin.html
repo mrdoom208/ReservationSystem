@@ -22,7 +22,7 @@
             <input type="text" id="Name" name="Name" placeholder="Enter your name" required>
 
             <label for="Phone">Phone number <span>*</span></label>
-            <input type="tel" id="Phone" name="Phone" placeholder="Enter phone number" required>
+            <input type="tel" id="Phone" name="Phone" pattern="\+639\d{9}" required>
 
             <label for="seatingCapacity">Seating Capacity <span>*</span></label>
             <select id="seatingCapacity" name="seatingCapacity" class="capacity-select" required>
@@ -54,8 +54,57 @@
         </form>
     </div>
 </div>
+<script>
+    const agree = document.getElementById('agree');
+    const proceedBtn = document.getElementById('submit');
+    const form = document.getElementById('infoForm');
 
-<script src="/js/script.js"></script>
+    // Enable button if checkbox checked
+    agree.addEventListener('change', () => {
+      proceedBtn.disabled = !agree.checked;
+    });
+
+
+    const phoneInput = document.getElementById("Phone");
+    const PREFIX = "+63";
+
+    // Set default value
+    phoneInput.value = PREFIX;
+
+    // Prevent deleting or editing +63
+    phoneInput.addEventListener("keydown", (e) => {
+        if (
+            phoneInput.selectionStart < PREFIX.length &&
+            (e.key === "Backspace" || e.key === "Delete")
+        ) {
+            e.preventDefault();
+        }
+    });
+
+    // Force +63 and digits only
+    phoneInput.addEventListener("input", () => {
+        if (!phoneInput.value.startsWith(PREFIX)) {
+            phoneInput.value = PREFIX;
+        }
+
+        // Allow digits only after +63
+        let digits = phoneInput.value.slice(PREFIX.length).replace(/\D/g, "");
+
+        // PH mobile numbers are 10 digits after +63
+        digits = digits.slice(0, 10);
+
+        phoneInput.value = PREFIX + digits;
+    });
+
+    // Prevent invalid paste
+    phoneInput.addEventListener("paste", (e) => {
+        e.preventDefault();
+        const pasted = e.clipboardData.getData("text").replace(/\D/g, "");
+
+        phoneInput.value = PREFIX + pasted.slice(-10);
+    });
+
+</script>
 
 
 </body>

@@ -84,6 +84,8 @@ public class ReservationController {
                         + " | Ref: " + reservation.getReference()
                         + " has been added"
         );
+        dto.setPhone(reservation.getCustomer().getPhone());
+        dto.setReference(reservation.getReference());
 
 
 

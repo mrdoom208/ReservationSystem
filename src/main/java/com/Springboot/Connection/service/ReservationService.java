@@ -1,8 +1,10 @@
 package com.Springboot.Connection.service;
 
+import com.Springboot.Connection.dto.WebUpdateDTO;
 import com.Springboot.Connection.model.Reservation;
 import com.Springboot.Connection.repository.ReservationRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
@@ -17,6 +19,9 @@ public class ReservationService {
 
     private final ReservationRepository reservationRepository;
     private final SettingsService settingsService;
+
+    @Autowired
+    private SimpMessagingTemplate messagingTemplate;
 
     @Autowired
     public ReservationService(ReservationRepository reservationRepository,
@@ -39,6 +44,23 @@ public class ReservationService {
                 reservation.setReservationCancelledtime(LocalTime.now());
                 reservation.setRevenue(BigDecimal.ZERO);
                 reservationRepository.save(reservation);
+
+
+                WebUpdateDTO dto = new WebUpdateDTO();
+                dto.setCode("CANCELLED_RESERVATION");
+                dto.setMessage(
+                        "Reservation from " + reservation.getCustomer().getName()
+                                + " (" + reservation.getPax() + " pax)"
+                                + " | Ref: " + reservation.getReference()
+                                + " has been cancelled"
+                );
+                dto.setPhone(reservation.getCustomer().getPhone());
+                dto.setReference(reservation.getReference());
+                System.out.println(dto.getCode());
+
+                messagingTemplate.convertAndSend("/topic/forms",dto);
+                System.out.println(dto.getCode());
+
             }
         }
     }

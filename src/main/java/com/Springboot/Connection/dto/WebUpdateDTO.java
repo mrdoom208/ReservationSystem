@@ -6,11 +6,17 @@ public class WebUpdateDTO {
 
     private String message;
 
+    private String phone;
+
+    private String reference;
+
     public WebUpdateDTO() {}
 
-    public WebUpdateDTO(String code, String message) {
+    public WebUpdateDTO(String code, String message,String phone, String reference) {
         this.code = code;
         this.message = message;
+        this.phone = phone;
+        this.reference = reference;
     }
 
     public String getCode() {
@@ -28,4 +34,12 @@ public class WebUpdateDTO {
     public void setMessage(String message) {
         this.message = message;
     }
+
+    public String getPhone(){return phone;}
+
+    public void setPhone(String phone) {this.phone = phone;}
+
+    public String getReference() {return reference;}
+
+    public void setReference(String reference) {this.reference = reference;}
 }

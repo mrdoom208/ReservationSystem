@@ -34,6 +34,28 @@ public class QueueController {
         }
 
     }
+    @GetMapping("/login")
+    public String loginViaLink(
+            @RequestParam("phone") String phone,
+            @RequestParam("reference") String reference,
+            HttpSession session
+    ) {
+        // Find reservation
+        Reservation reservation = reservationRepository.findByCustomerPhoneAndReference(phone, reference);
+
+        if (reservation != null) {
+            // Store session info
+            session.setAttribute("phone", reservation.getCustomer().getPhone());
+            session.setAttribute("reference", reservation.getReference());
+            session.setAttribute("reservationId", reservation.getId());
+
+            // Redirect to reservation page
+            return "redirect:/queue"; // your page to view/modify reservation
+        } else {
+            return "redirect:/loginpage?error=No+Reservation+Found";
+        }
+    }
+
     @GetMapping("/queue")
     public String queuePage(HttpSession session, Model model) {
         String phone = (String) session.getAttribute("phone");

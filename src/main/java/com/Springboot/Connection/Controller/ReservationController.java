@@ -14,6 +14,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.LocalTime;
 
@@ -57,6 +59,7 @@ public class ReservationController {
     }
 
 
+
     @ PostMapping("/reserve")
     public String saveReservation(CustomerReservationDTO reservationDTO) {
         Customer newCustomer = new Customer();
@@ -86,6 +89,8 @@ public class ReservationController {
         );
         dto.setPhone(reservation.getCustomer().getPhone());
         dto.setReference(reservation.getReference());
+        dto.setCustomerName(reservation.getCustomer().getName());
+        dto.setPax(reservation.getPax());
 
 
 
@@ -95,4 +100,6 @@ public class ReservationController {
 
         return "redirect:/loginpage?newreservation=New Reservation Created Successfully";
     }
+
+
 }

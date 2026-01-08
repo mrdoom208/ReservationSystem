@@ -63,8 +63,8 @@ public class QueueController {
 
         if (phone == null) {
             return "redirect:/loginpage";
-        }
 
+        }
         Reservation reservation = reservationRepository.findByCustomerPhoneAndReference(phone,reference);
 
         if (reservation != null) {
@@ -95,6 +95,16 @@ public class QueueController {
             model.addAttribute("completeDateTime", reservation.getReservationCompletetime() != null ? completeDateTime.toString() : "") ;
             model.addAttribute("created", readablePendingDateTime);
 
+
+            int activeSegments = switch (reservation.getStatus()) {
+                case "Pending"  -> 6;
+                case "Confirm"  -> 12;
+                case "Seated"   -> 18;
+                case "Complete" -> 24;
+                case "Cancelled" -> 24;
+                default -> 0;
+            };
+            model.addAttribute("activeSegments", activeSegments);
         } else {
             // Default placeholders
             model.addAttribute("customerName", "Loading...");

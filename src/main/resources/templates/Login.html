@@ -2,28 +2,146 @@
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <link rel="icon" type="image/png" sizes="16x16" href="/img/LogoRound.png">
+    <link rel="icon" type="image/png" sizes="100x100" href="/img/LogoRound.png">
     <title>Login Reservation</title>
-    <link rel="stylesheet" href="/css/romaticcssbaboy.css">
+    <link rel="stylesheet" href="/css/main.css">
 </head>
 <body>
-<div class="patch"></div>
-<a id="Register" href="/">Create Reservation</a>
+<!-- Navigation Bar -->
+<nav class="navbar">
+    <div class="navbar-left">
+        <div class="navbar-logo">
+            <img src="/img/LogoRound.png" alt="Romantic Baboy Logo">
+        </div>
+        <div class="navbar-brand">Romantic Baboy</div>
+    </div>
+
+    <div class="navbar-center">
+        ROMANTIC BABOY KOREAN GRILL
+    </div>
+
+    <div class="navbar-right">
+        <a href="/" class="navbar-btn">Create Reservation</a>
+    </div>
+
+    <!-- Mobile Menu Toggle -->
+    <button class="navbar-toggle" onclick="toggleMobileMenu()">☰</button>
+</nav>
+
+<!-- Mobile Menu -->
+<div class="navbar-mobile-menu" id="mobileMenu">
+    <a href="/" class="navbar-btn">Create Reservation</a>
+</div>
 
 <div class="login-box">
     <form id="login" action="/login" method="post">
         <h1>Customer Login</h1>
+        <div class="brand-line"></div>
+        <div class="subtitle">ROMANTIC BABOY KOREAN GRILL</div>
         <p th:text="${errorMessage}" th:class="${status}"></p>
-        <Label for="Phone" >Phone Number <span>*</span></Label>
+
+        <label for="Phone">Phone Number <span>*</span></label>
         <input type="tel" id="Phone" name="phone" placeholder="Enter Registered Phone Number" required/>
 
         <label for="Reference">Reservation Reference <span>*</span></label>
         <input type="text" id="Reference" name="reference" placeholder="Enter Reference Code" required/>
 
         <button type="submit" id="open">Login</button>
-
     </form>
 </div>
+
+<script>
+    // Mobile menu toggle
+    function toggleMobileMenu() {
+        const menu = document.getElementById('mobileMenu');
+        menu.classList.toggle('active');
+    }
+
+    // Close mobile menu when clicking outside
+    document.addEventListener('click', function(event) {
+        const menu = document.getElementById('mobileMenu');
+        const toggle = document.querySelector('.navbar-toggle');
+
+        if (!menu.contains(event.target) && !toggle.contains(event.target)) {
+            menu.classList.remove('active');
+        }
+    });
+
+    const form = document.getElementById('login');
+    const submitBtn = document.getElementById('open');
+    const phoneInput = document.getElementById('Phone');
+    const referenceInput = document.getElementById('Reference');
+
+    phoneInput.addEventListener('input', function(e) {
+        let value = this.value.replace(/\D/g, '');
+
+        if (value.startsWith('63')) {
+            value = value.slice(2);
+        }
+
+        if (value.length > 0) {
+            let formatted = '+63';
+            if (value.length > 0) {
+                formatted += ' ' + value.slice(0, 3);
+            }
+            if (value.length > 3) {
+                formatted += ' ' + value.slice(3, 6);
+            }
+            if (value.length > 6) {
+                formatted += ' ' + value.slice(6, 10);
+            }
+            this.value = formatted;
+        }
+    });
+
+    referenceInput.addEventListener('input', function(e) {
+        this.value = this.value.toUpperCase();
+    });
+
+    form.addEventListener('submit', function(e) {
+        if (!form.checkValidity()) {
+            return;
+        }
+
+        submitBtn.classList.add('loading');
+        submitBtn.disabled = true;
+
+        const cleanPhone = phoneInput.value.replace(/\s/g, '');
+        phoneInput.value = cleanPhone;
+    });
+
+    const formInputs = form.querySelectorAll('input');
+    formInputs.forEach((input, index) => {
+        input.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+
+                if (index === formInputs.length - 1 && form.checkValidity()) {
+                    form.requestSubmit();
+                } else {
+                    const nextInput = formInputs[index + 1];
+                    if (nextInput) {
+                        nextInput.focus();
+                    }
+                }
+            }
+        });
+    });
+
+    submitBtn.addEventListener('mousedown', function() {
+        if (!this.disabled) {
+            this.style.transform = 'scale(0.98)';
+        }
+    });
+
+    submitBtn.addEventListener('mouseup', function() {
+        this.style.transform = '';
+    });
+
+    submitBtn.addEventListener('mouseleave', function() {
+        this.style.transform = '';
+    });
+</script>
 
 <script src="/js/script.js"></script>
 </body>

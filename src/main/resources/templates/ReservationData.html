@@ -5,138 +5,171 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Restaurant Queue Display</title>
     <link rel="icon" type="image/png" sizes="16x16" href="/img/LogoRound.png">
-    <link rel="stylesheet" href="/css/ReservationData.css">
+    <link rel="stylesheet" href="/css/main.css">
 </head>
-<body>
-<div class="top-right-buttons">
-    <button id="changeDetailsButton" onclick="openModal()" >Change Details</button>
-    <a id="logoutButton" href="/logout">Logout</a>
+<body class="reservation-page">
+<!-- Navigation Bar -->
+<nav class="navbar">
+    <div class="navbar-left">
+        <div class="navbar-logo">
+            <img src="/img/LogoRound.png" alt="Romantic Baboy Logo">
+        </div>
+        <div class="navbar-brand">Romantic Baboy</div>
+    </div>
 
+    <div class="navbar-center">
+        ROMANTIC BABOY KOREAN GRILL
+    </div>
 
+    <div class="navbar-right">
+        <button class="navbar-btn" onclick="openModal()">Change Details</button>
+        <a href="/logout" class="navbar-btn">Logout</a>
+    </div>
+
+    <!-- Mobile Menu Toggle -->
+    <button class="navbar-toggle" onclick="toggleMobileMenu()">☰</button>
+</nav>
+
+<!-- Mobile Menu -->
+<div class="navbar-mobile-menu" id="mobileMenu">
+    <button class="navbar-btn" onclick="openModal(); toggleMobileMenu();">Change Details</button>
+    <a href="/logout" class="navbar-btn">Logout</a>
 </div>
-    <div class="bg-decoration bg-decoration-1"></div>
-    <div class="bg-decoration bg-decoration-2"></div>
 
-    <div class="container">
-        <!-- Clock Icon -->
-        <div class="clock-icon">
+<div class="container">
+    <div class="clock-icon"></div>
 
+    <div class="main-card">
+        <div class="brand-header">
+            <div class="brand-title">ROMANTIC BABOY KOREAN GRILL</div>
         </div>
 
-        <!-- Main Card -->
-        <div class="main-card">
-            <div class="content-grid">
-                <!-- Customer Info -->
-                <div class="customer-info">
-                    <div class="info-item">NAME: <span th:text="${customerName}">Loading...</span></div>
-                    <div class="info-item">PHONE: <span th:text="${customerPhone}">Loading...</span></div>
-                    <div class="info-item">REFERENCE: <span th:text="${reference}">Loading...</span></div>
-                    <div class="info-item">QUEUE: <span th:text="${queueNumber}">Loading...</span></div>
-                    <div class="info-item">SEATING CAPACITY: <span th:text="${seatingCapacity}">Loading...</span> Person</div>
-                    <div class="info-item">PREFERRED SPACE: <span th:text="${preferredSpace}">Loading...</span></div>
-                    <div class="info-item">STATUS: <span th:text="${status}"
-                                                         th:class="'status-badge status-'+ ${#strings.replace(status,' ','-')}">Loading...</span></div>
+        <div class="content-grid">
+            <div class="customer-info">
+                <div class="info-item">
+                    Name
+                    <span th:text="${customerName}">Loading...</span>
                 </div>
-
-                <!-- Timer Section -->
-                <div class="timer-section">
-                    <div class="countdown" id="countup">00:00:00</div>
-                    <div class="estimated-time">
-                         Created: <span th:text="${created}">00:00:00</span>
-                    </div>
+                <div class="info-item">
+                    Phone
+                    <span id="phoneDisplay" th:text="${customerPhone}">Loading...</span>
+                </div>
+                <div class="info-item">
+                    Reference
+                    <span th:text="${reference}">Loading...</span>
+                </div>
+                <div class="info-item">
+                    Queue
+                    <span th:text="${queueNumber}">Loading...</span>
+                </div>
+                <div class="info-item">
+                    Seating Capacity
+                    <span th:text="${seatingCapacity} + ' Person'">Loading...</span>
+                </div>
+                <div class="info-item">
+                    Preferred Space
+                    <span th:text="${preferredSpace}">Loading...</span>
+                </div>
+                <div class="info-item">
+                    Status
+                    <span th:text="${status}"
+                          th:class="'status-'+ ${#strings.replace(status,' ','-')}">Loading...</span>
                 </div>
             </div>
-        </div>
 
-        <!-- Progress Bar -->
-        <div class="progress-bar">
-            <div class="progress-segment"></div>
-            <div class="progress-segment"></div>
-            <div class="progress-segment"></div>
-            <div class="progress-segment"></div>
-            <div class="progress-segment"></div>
-            <div class="progress-segment"></div>
-            <div class="progress-segment"></div>
-            <div class="progress-segment"></div>
-            <div class="progress-segment"></div>
-            <div class="progress-segment"></div>
-            <div class="progress-segment"></div>
-            <div class="progress-segment"></div>
-            <div class="progress-segment"></div>
-            <div class="progress-segment"></div>
-            <div class="progress-segment"></div>
-            <div class="progress-segment"></div>
-            <div class="progress-segment"></div>
-            <div class="progress-segment"></div>
-            <div class="progress-segment"></div>
-            <div class="progress-segment"></div>
-            <div class="progress-segment"></div>
-            <div class="progress-segment"></div>
-            <div class="progress-segment"></div>
-            <div class="progress-segment"></div>
+            <div class="timer-section">
+                <div class="countdown" id="countup">00:00:00</div>
+                <div class="estimated-time">
+                    Created: <span th:text="${created}">00:00:00</span>
+                </div>
+            </div>
         </div>
     </div>
 
-    <div class="modal-overlay" id="modalOverlay" onclick="closeModalOnOverlay(event)">
-        <div class="modal-container" onclick="event.stopPropagation()">
-            <!-- Modal Header -->
-            <div class="modal-header">
-                <button class="close-button" onclick="closeModal()">&times;</button>
-                <div class="modal-title">Change Details</div>
-                <div class="modal-subtitle">Update your reservation information</div>
-            </div>
-
-            <!-- Modal Body -->
-            <div class="modal-body">
-                <form id="changeDetailsForm" th:action="@{/updateCustomer}" method="post">
-                    <div class="form-group">
-                        <label class="form-label" for="customerName">Name</label>
-                        <input type="text" id="customerName" name="customerName" class="form-input" placeholder="Enter your name" th:value="${customerName}" required>
-                    </div>
-
-                    <div class="form-group">
-                        <label class="form-label" for="customerPhone">Phone Number</label>
-                        <input type="tel" id="customerPhone" name="customerPhone" class="form-input" placeholder="Enter your phone number" th:value="${customerPhone}" required>
-                    </div>
-
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label class="form-label" for="seatingCapacity">Seating Capacity</label>
-                            <select id="seatingCapacity" name="seatingCapacity" class="form-select" required>
-                                <option value="">Select...</option>
-                                <option value="1">1 Person</option>
-                                <option value="2">2 Persons</option>
-                                <option value="3">3 Persons</option>
-                                <option value="4">4 Persons</option>
-                                <option value="5">5 Persons</option>
-                                <option value="6">6 Persons</option>
-                                <option value="7">7 Persons</option>
-                                <option value="8">8 Persons</option>
-                                <option value="9">9 Persons</option>
-                                <option value="10">10 Persons</option>
-                            </select>
-                        </div>
-
-                        <div class="form-group">
-                            <label class="form-label" for="preferredSpace">Preferred Space</label>
-                            <select id="preferredSpace" name="preferredSpace" class="form-select" required>
-                                <option value="">Select...</option>
-                                <option value="Indoor">Indoor</option>
-                                <option value="Outdoor">Outdoor</option>
-                            </select>
-                        </div>
-                    </div>
-                </form>
-            </div>
-
-            <!-- Modal Footer -->
-            <div class="modal-footer">
-                <button type="button" class="btn btn-cancel" onclick="closeModal()">Cancel</button>
-                <button type="submit" class="btn btn-submit" form="changeDetailsForm">Save Changes</button>
-            </div>
+    <div class="progress-bar">
+        <div class="progress-segment"
+             th:each="i : ${#numbers.sequence(1,24)}"
+             th:classappend="${i <= activeSegments} ? 'active'">
         </div>
     </div>
+</div>
+
+<div class="modal-overlay" id="modalOverlay" onclick="closeModalOnOverlay(event)">
+    <div class="modal-container" onclick="event.stopPropagation()">
+        <div class="modal-header">
+            <button class="close-button" onclick="closeModal()">&times;</button>
+            <div class="modal-title">Change Details</div>
+            <div class="modal-subtitle">Romantic Baboy Korean Grill</div>
+        </div>
+
+        <div class="modal-body">
+            <form id="changeDetailsForm" th:action="@{/updateCustomer}" method="post">
+                <div class="form-group">
+                    <label class="form-label" for="customerName">Name</label>
+                    <input type="text" id="customerName" name="customerName" class="form-input"
+                           placeholder="Enter your name" th:value="${customerName}" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="customerPhone">Phone Number</label>
+                    <input type="tel" id="customerPhone" name="customerPhone" class="form-input"
+                           placeholder="Enter your phone number" th:value="${customerPhone}" required>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label" for="seatingCapacity">Seating Capacity</label>
+                        <select id="seatingCapacity" name="seatingCapacity" class="form-select" required>
+                            <option value="">Select...</option>
+                            <option value="1">1 Person</option>
+                            <option value="2">2 Persons</option>
+                            <option value="3">3 Persons</option>
+                            <option value="4">4 Persons</option>
+                            <option value="5">5 Persons</option>
+                            <option value="6">6 Persons</option>
+                            <option value="7">7 Persons</option>
+                            <option value="8">8 Persons</option>
+                            <option value="9">9 Persons</option>
+                            <option value="10">10 Persons</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="preferredSpace">Preferred Space</label>
+                        <select id="preferredSpace" name="preferredSpace" class="form-select" required>
+                            <option value="">Select...</option>
+                            <option value="Indoor">Indoor</option>
+                            <option value="Outdoor">Outdoor</option>
+                        </select>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <div class="modal-footer">
+            <button type="button" class="btn btn-cancel" onclick="closeModal()">Cancel</button>
+            <button type="submit" class="btn btn-submit" form="changeDetailsForm">Save Changes</button>
+        </div>
+    </div>
+</div>
+
 <script th:inline="javascript">
+    // Mobile menu toggle
+    function toggleMobileMenu() {
+        const menu = document.getElementById('mobileMenu');
+        menu.classList.toggle('active');
+    }
+
+    // Close mobile menu when clicking outside
+    document.addEventListener('click', function(event) {
+        const menu = document.getElementById('mobileMenu');
+        const toggle = document.querySelector('.navbar-toggle');
+
+        if (!menu.contains(event.target) && !toggle.contains(event.target)) {
+            menu.classList.remove('active');
+        }
+    });
+
     const status = [[${status}]];
     const pendingTimeStr = [[${pendingDateTime}]];
     const completeTimeStr = [[${completeDateTime}]];
@@ -147,11 +180,9 @@
         let diff;
 
         if(status === 'Complete' && completeTimeStr) {
-            // Show difference between pending and complete
             const completeTime = new Date(completeTimeStr);
             diff = completeTime - startTime;
         } else {
-            // Normal count-up from pending
             const now = new Date();
             diff = now - startTime;
         }
@@ -166,36 +197,106 @@
             String(seconds).padStart(2,'0');
     }
 
-    // Only update every second if not complete
     if(status !== 'Complete') {
         setInterval(updateCountUp, 1000);
     }
 
-    // Initial update
     updateCountUp();
-</script>
-<script>
-    function openModal() {
-            document.getElementById('modalOverlay').classList.add('active');
-            document.body.style.overflow = 'hidden';
-        }
 
-        function closeModal() {
-            document.getElementById('modalOverlay').classList.remove('active');
-            document.body.style.overflow = 'auto';
-        }
-
-        function closeModalOnOverlay(event) {
-            if (event.target === event.currentTarget) {
-                closeModal();
+    function formatPhoneDisplay() {
+        const phoneEl = document.getElementById('phoneDisplay');
+        if (phoneEl) {
+            let phone = phoneEl.textContent.replace(/\D/g, '');
+            if (phone.startsWith('63')) {
+                phone = phone.slice(2);
+            }
+            if (phone.length === 10) {
+                phoneEl.textContent = '+63 ' + phone.slice(0, 3) + ' ' + phone.slice(3, 6) + ' ' + phone.slice(6);
             }
         }
-        document.addEventListener('keydown', function(event) {
-                    if (event.key === 'Escape') {
-                        closeModal();
-                    }
-                });
+    }
 
+    formatPhoneDisplay();
 </script>
-    </body>
+
+<script>
+    const form = document.getElementById('changeDetailsForm');
+    const submitBtn = document.querySelector('.btn-submit');
+    const phoneInput = document.getElementById('customerPhone');
+
+    function openModal() {
+        document.getElementById('modalOverlay').classList.add('active');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeModal() {
+        document.getElementById('modalOverlay').classList.remove('active');
+        document.body.style.overflow = 'auto';
+        submitBtn.classList.remove('loading');
+    }
+
+    function closeModalOnOverlay(event) {
+        if (event.target === event.currentTarget) {
+            closeModal();
+        }
+    }
+
+    document.addEventListener('keydown', function(event) {
+        if (event.key === 'Escape') {
+            closeModal();
+        }
+    });
+
+    if (phoneInput) {
+        phoneInput.addEventListener('input', function(e) {
+            let value = this.value.replace(/\D/g, '');
+
+            if (value.startsWith('63')) {
+                value = value.slice(2);
+            }
+
+            if (value.length > 0) {
+                let formatted = '+63';
+                if (value.length > 0) {
+                    formatted += ' ' + value.slice(0, 3);
+                }
+                if (value.length > 3) {
+                    formatted += ' ' + value.slice(3, 6);
+                }
+                if (value.length > 6) {
+                    formatted += ' ' + value.slice(6, 10);
+                }
+                this.value = formatted;
+            }
+        });
+    }
+
+    form.addEventListener('submit', function(e) {
+        if (!form.checkValidity()) {
+            return;
+        }
+
+        submitBtn.classList.add('loading');
+
+        if (phoneInput) {
+            const cleanPhone = phoneInput.value.replace(/\s/g, '');
+            phoneInput.value = cleanPhone;
+        }
+    });
+
+    submitBtn.addEventListener('mousedown', function() {
+        if (!this.classList.contains('loading')) {
+            this.style.transform = 'scale(0.98)';
+        }
+    });
+
+    submitBtn.addEventListener('mouseup', function() {
+        this.style.transform = '';
+    });
+
+    submitBtn.addEventListener('mouseleave', function() {
+        this.style.transform = '';
+    });
+</script>
+</body>
 </html>

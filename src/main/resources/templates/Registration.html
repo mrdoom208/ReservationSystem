@@ -4,29 +4,52 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>Restaurant Reservation</title>
-    <link rel="icon" type="image/png" sizes="16x16" href="/img/LogoRound.png">
-    <link rel="stylesheet" href="/css/romaticcssbaboy.css">
-
+    <link rel="icon" type="image/png" sizes="100x100" href="/img/LogoRound.png">
+    <link rel="stylesheet" href="/css/main.css">
 </head>
 <body>
-<!-- Your visual elements -->
-<div class="overlay"></div>
-<div class="patch"></div>
-<a id="Register" href="/loginpage">Login Reservation</a>
+<!-- Navigation Bar -->
+<nav class="navbar">
+    <div class="navbar-left">
+        <div class="navbar-logo">
+            <img src="/img/LogoRound.png" alt="Romantic Baboy Logo">
+        </div>
+        <div class="navbar-brand">Romantic Baboy</div>
+    </div>
+
+    <div class="navbar-center">
+        ROMANTIC BABOY KOREAN GRILL
+    </div>
+
+    <div class="navbar-right">
+        <a href="/loginpage" class="navbar-btn">Login Reservation</a>
+    </div>
+
+    <!-- Mobile Menu Toggle -->
+    <button class="navbar-toggle" onclick="toggleMobileMenu()">☰</button>
+</nav>
+
+<!-- Mobile Menu -->
+<div class="navbar-mobile-menu" id="mobileMenu">
+    <a href="/loginpage" class="navbar-btn">Login Reservation</a>
+</div>
+
 <div class="reservation-container">
     <div class="form-box">
-        <h1>WALK-IN RESERVATION</h1>
+        <h1>Walk-In Reservation</h1>
+        <div class="brand-line"></div>
+        <div class="subtitle">ROMANTIC BABOY KOREAN GRILL</div>
 
         <form id="infoForm" action="/reserve" method="post">
             <label for="Name">Customer's Name <span>*</span></label>
             <input type="text" id="Name" name="Name" placeholder="Enter your name" required>
 
-            <label for="Phone">Phone number <span>*</span></label>
-            <input type="tel" id="Phone" name="Phone" pattern="\+639\d{9}" required>
+            <label for="Phone">Phone Number <span>*</span></label>
+            <input type="tel" id="Phone" name="Phone" pattern="\+639\d{9}" placeholder="+63 9XX XXX XXXX" required>
 
             <label for="seatingCapacity">Seating Capacity <span>*</span></label>
             <select id="seatingCapacity" name="pax" class="capacity-select" required>
-                <option value="">Select...</option>
+                <option value="">Select number of guests...</option>
                 <option value="1">1 Person</option>
                 <option value="2">2 Persons</option>
                 <option value="3">3 Persons</option>
@@ -38,15 +61,17 @@
                 <option value="9">9 Persons</option>
                 <option value="10">10 Persons</option>
             </select>
+
             <label>Preferred Space (optional)</label>
             <div class="radio-group">
                 <label><input type="radio" name="Prefer" value="Indoor"> Indoor</label>
                 <label><input type="radio" name="Prefer" value="Outdoor"> Outdoor</label>
             </div>
 
-            <label for="Email">Email (optional):</label>
+            <label for="Email">Email (optional)</label>
             <input type="email" id="Email" name="Email" placeholder="you@example.com">
-            <label style="margin-top:12px;">
+
+            <label style="margin-top:24px;">
                 <input type="checkbox" id="agree" name="agree"> I agree to the Terms and Conditions
             </label>
 
@@ -54,58 +79,129 @@
         </form>
     </div>
 </div>
+
 <script>
+    // Mobile menu toggle
+    function toggleMobileMenu() {
+        const menu = document.getElementById('mobileMenu');
+        menu.classList.toggle('active');
+    }
+
+    // Close mobile menu when clicking outside
+    document.addEventListener('click', function(event) {
+        const menu = document.getElementById('mobileMenu');
+        const toggle = document.querySelector('.navbar-toggle');
+
+        if (!menu.contains(event.target) && !toggle.contains(event.target)) {
+            menu.classList.remove('active');
+        }
+    });
+
     const agree = document.getElementById('agree');
     const proceedBtn = document.getElementById('submit');
     const form = document.getElementById('infoForm');
-
-    // Enable button if checkbox checked
-    agree.addEventListener('change', () => {
-      proceedBtn.disabled = !agree.checked;
-    });
-
-
     const phoneInput = document.getElementById("Phone");
     const PREFIX = "+63";
 
-    // Set default value
+    agree.addEventListener('change', () => {
+        proceedBtn.disabled = !agree.checked;
+    });
+
     phoneInput.value = PREFIX;
 
-    // Prevent deleting or editing +63
+    phoneInput.addEventListener("input", (e) => {
+        let value = phoneInput.value;
+
+        if (!value.startsWith(PREFIX)) {
+            value = PREFIX;
+        }
+
+        let digits = value.slice(PREFIX.length).replace(/\D/g, "");
+        digits = digits.slice(0, 10);
+
+        let formatted = PREFIX;
+        if (digits.length > 0) {
+            formatted += " " + digits.slice(0, 3);
+        }
+        if (digits.length > 3) {
+            formatted += " " + digits.slice(3, 6);
+        }
+        if (digits.length > 6) {
+            formatted += " " + digits.slice(6, 10);
+        }
+
+        phoneInput.value = formatted;
+    });
+
     phoneInput.addEventListener("keydown", (e) => {
-        if (
-            phoneInput.selectionStart < PREFIX.length &&
-            (e.key === "Backspace" || e.key === "Delete")
-        ) {
+        const cursorPos = phoneInput.selectionStart;
+        if (cursorPos <= PREFIX.length + 1 && (e.key === "Backspace" || e.key === "Delete")) {
             e.preventDefault();
         }
     });
 
-    // Force +63 and digits only
-    phoneInput.addEventListener("input", () => {
-        if (!phoneInput.value.startsWith(PREFIX)) {
-            phoneInput.value = PREFIX;
-        }
-
-        // Allow digits only after +63
-        let digits = phoneInput.value.slice(PREFIX.length).replace(/\D/g, "");
-
-        // PH mobile numbers are 10 digits after +63
-        digits = digits.slice(0, 10);
-
-        phoneInput.value = PREFIX + digits;
-    });
-
-    // Prevent invalid paste
     phoneInput.addEventListener("paste", (e) => {
         e.preventDefault();
         const pasted = e.clipboardData.getData("text").replace(/\D/g, "");
+        const digits = pasted.slice(-10);
 
-        phoneInput.value = PREFIX + pasted.slice(-10);
+        let formatted = PREFIX;
+        if (digits.length > 0) {
+            formatted += " " + digits.slice(0, 3);
+        }
+        if (digits.length > 3) {
+            formatted += " " + digits.slice(3, 6);
+        }
+        if (digits.length > 6) {
+            formatted += " " + digits.slice(6, 10);
+        }
+
+        phoneInput.value = formatted;
     });
 
+    form.addEventListener('submit', function(e) {
+        if (!form.checkValidity()) {
+            return;
+        }
+
+        proceedBtn.classList.add('loading');
+        proceedBtn.disabled = true;
+
+        const cleanPhone = phoneInput.value.replace(/\s/g, '');
+        phoneInput.value = cleanPhone;
+    });
+
+    const formInputs = form.querySelectorAll('input, select');
+    formInputs.forEach((input, index) => {
+        input.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+
+                if (index === formInputs.length - 1 && !proceedBtn.disabled) {
+                    form.requestSubmit();
+                } else {
+                    const nextInput = formInputs[index + 1];
+                    if (nextInput) {
+                        nextInput.focus();
+                    }
+                }
+            }
+        });
+    });
+
+    proceedBtn.addEventListener('mousedown', function() {
+        if (!this.disabled) {
+            this.style.transform = 'scale(0.98)';
+        }
+    });
+
+    proceedBtn.addEventListener('mouseup', function() {
+        this.style.transform = '';
+    });
+
+    proceedBtn.addEventListener('mouseleave', function() {
+        this.style.transform = '';
+    });
 </script>
-
-
 </body>
 </html>

@@ -108,16 +108,16 @@ body::before {
 .navbar-right {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 10px;
 }
 
 .navbar-btn {
-    padding: 10px 24px;
+    padding: 0.75em 1.8em;
     background: #FFF8F0;
     color: #dc2626;
     border: 2px solid #dc2626;
     border-radius: 6px;
-    font-size: 14px;
+    font-size: clamp(12px, 1vw, 14px);
     font-weight: 600;
     text-decoration: none;
     cursor: pointer;
@@ -556,12 +556,15 @@ p.success {
     color: #065f46;
     background: #d1fae5;
     border-color: #6ee7b7;
+    display:block ;
+
 }
 
 p.error {
     color: #991b1b;
     background: #fee2e2;
     border-color: #fca5a5;
+    display:block ;
 }
 
 /* ============================================
@@ -620,6 +623,12 @@ p.error {
     letter-spacing: -2px;
     font-variant-numeric: tabular-nums;
 }
+.countdown.Complete { color: #059669; }
+.countdown.Confirm { color: #2563eb; }
+.countdown.Pending { color: #6b7280; }
+.countdown.Seated { color: #16a34a; }
+.countdown.Cancelled { color: #dc2626; }
+.countdown.No.Show { color: #9333ea;}
 
 .estimated-time {
     font-size: 14px;
@@ -651,19 +660,22 @@ p.error {
     transition: all 0.3s ease;
 }
 
-.progress-segment.active {
-    background: #dc2626;
-}
+.progress-segment.active.status-Complete { background: #059669; }
+.progress-segment.active.status-Confirm { background: #2563eb; }
+.progress-segment.active.status-Pending { background: #6b7280; }
+.progress-segment.active.status-Seated { background: #16a34a; }
+.progress-segment.active.status-Cancelled { background: #dc2626; }
+.progress-segment.active.status-No.Show { background: #9333ea;}
 
 /* === STATUS COLORS === */
 .status-Complete { color: #059669 !important; }
 .status-Occupied { color: #ea580c; }
 .status-Reserved { color: #d97706; }
-.status-Confirm { color: #2563eb; }
-.status-Pending { color: #6b7280; }
-.status-Seated { color: #16a34a; }
+.status-Confirm { color: #2563eb !important;}
+.status-Pending { color: #6b7280 !important;}
+.status-Seated { color: #16a34a !important;}
 .status-Cancelled { color: #dc2626 !important;}
-.status-No-Show { color: #9333ea; }
+.status-No-Show { color: #9333ea !important;}
 
 /* ============================================
    MODAL
@@ -753,6 +765,13 @@ p.error {
 .modal-body {
     padding: 32px;
 }
+.modal-body p {
+    font-size: 16px;
+    line-height: 1.5;
+    color: #1f2937;
+    text-align: center;
+    margin: 0;
+}
 
 .form-group {
     margin-bottom: 24px;
@@ -786,11 +805,16 @@ p.error {
 /* ============================================
    RESPONSIVE DESIGN
    ============================================ */
-
-@media (max-width: 1024px) {
+@media (max-width: 1200px) {
     .navbar-center {
         display: none;
     }
+    }
+
+
+
+@media (max-width: 1024px) {
+
 
     .navbar-brand {
         font-size: 16px;
@@ -801,8 +825,8 @@ p.error {
     .clock-icon {
         top: -50px;
         left: 30px;
-        width: 90px;
-        height: 90px;
+        width: 120px;
+        height:120px;
     }
 
     .main-card {
@@ -925,8 +949,8 @@ p.error {
     .clock-icon {
         top: -40px;
         left: 20px;
-        width: 75px;
-        height: 75px;
+        width: 100px;
+        height: 100px;
     }
 
     .main-card {
@@ -953,6 +977,16 @@ p.error {
     .countdown {
         font-size: 48px;
     }
+    .countdown.
+
+
+
+
+
+
+
+
+
 
     .timer-section {
         padding: 24px;

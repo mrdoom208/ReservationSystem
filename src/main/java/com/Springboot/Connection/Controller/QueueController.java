@@ -1,25 +1,32 @@
 package com.Springboot.Connection.Controller;
 
+import com.Springboot.Connection.dto.WebUpdateDTO;
 import com.Springboot.Connection.model.Reservation;
 import com.Springboot.Connection.repository.ReservationRepository;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Map;
 
 @Controller
 public class QueueController {
 
     @Autowired
     private ReservationRepository reservationRepository;
+    
+    @Autowired
+    SimpMessagingTemplate messagingTemplate;
 
     @PostMapping("/login")
     public String login(@RequestParam String phone,@RequestParam String reference, HttpSession session) {
@@ -78,12 +85,22 @@ public class QueueController {
             LocalTime pendingTime = reservation.getReservationPendingtime();   // e.g., 23:58:00
             LocalDateTime pendingDateTime = LocalDateTime.of(pendingDate, pendingTime);
             LocalDateTime completeDateTime = null;
+            LocalDateTime cancelledDateTime = null;
+            LocalDateTime NoShowDateTime = null;
             if (reservation.getReservationCompletetime() != null){
                 completeDateTime = LocalDateTime.of(reservation.getDate(),reservation.getReservationCompletetime());
             }
+            if (reservation.getReservationCancelledtime() != null){
+                cancelledDateTime = LocalDateTime.of(reservation.getDate(),reservation.getReservationCancelledtime());
+            }
+            if (reservation.getReservationNoshowtime() != null){
+                NoShowDateTime = LocalDateTime.of(reservation.getDate(),reservation.getReservationNoshowtime());
+            }
+
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MMMM dd, yyyy  hh:mm a");
             String readablePendingDateTime = pendingDateTime.format(formatter);
 
+            model.addAttribute("reservationId",reservation.getId());
             model.addAttribute("customerName", reservation.getCustomer().getName());
             model.addAttribute("customerPhone", reservation.getCustomer().getPhone());
             model.addAttribute("reference", reservation.getReference());
@@ -92,7 +109,9 @@ public class QueueController {
             model.addAttribute("preferredSpace", reservation.getPrefer() != null ? reservation.getPrefer() : "");
             model.addAttribute("status", reservation.getStatus());
             model.addAttribute("pendingDateTime", pendingDateTime.toString());
-            model.addAttribute("completeDateTime", reservation.getReservationCompletetime() != null ? completeDateTime.toString() : "") ;
+            model.addAttribute("completeDateTime", reservation.getReservationCompletetime() != null ? completeDateTime.toString() : "");
+            model.addAttribute("cancelledDateTime", reservation.getReservationCancelledtime() != null ? cancelledDateTime.toString() : "");
+            model.addAttribute("noShowDateTime", reservation.getReservationNoshowtime() != null ? NoShowDateTime.toString() : "");
             model.addAttribute("created", readablePendingDateTime);
 
 
@@ -150,6 +169,53 @@ public class QueueController {
 
         }
         return "redirect:/queue"; // Redirect after successful update
+    }
+
+    @PostMapping("/cancelReservation")
+    public String cancelReservation(HttpSession session) {
+        String phone = (String) session.getAttribute("phone");
+        String reference = (String) session.getAttribute("reference");
+
+        if (phone == null || reference == null) {
+            // session expired or user not logged in
+            return "redirect:/loginpage";
+        }
+
+        Reservation reservation = reservationRepository.findByCustomerPhoneAndReference(phone, reference);
+        if (reservation != null) {
+            // Update the customer name
+            reservation.setStatus("Cancelled");
+            reservationRepository.save(reservation);
+
+            WebUpdateDTO dto = new WebUpdateDTO();
+
+            dto.setCode("CANCELLED_RESERVATION");
+            dto.setMessage(
+                    "Reservation from " + reservation.getCustomer().getName()
+                            + " (" + reservation.getPax() + " pax)"
+                            + " | Ref: " + reservation.getReference()
+                            + " has been cancelled"
+            );
+            dto.setPhone(reservation.getCustomer().getPhone());
+            dto.setReference(reservation.getReference());
+            dto.setPax(reservation.getPax());
+            dto.setCustomerName(reservation.getCustomer().getName());
+
+            messagingTemplate.convertAndSend("/topic/forms", dto);
+
+        }
+        return "redirect:/queue"; // Redirect after successful update
+    }
+
+    @GetMapping("/reservation/status")
+    @ResponseBody
+    public Map<String, String> getReservationStatus(
+            @RequestParam Long reservationId) {
+
+        Reservation reservation = reservationRepository.findById(reservationId)
+                .orElseThrow();
+
+        return Map.of("status", reservation.getStatus());
     }
 
 

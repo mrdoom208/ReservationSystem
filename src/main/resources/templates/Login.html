@@ -41,7 +41,7 @@
         <p th:text="${errorMessage}" th:class="${status}"></p>
 
         <label for="Phone">Phone Number <span>*</span></label>
-        <input type="tel" id="Phone" name="phone" placeholder="Enter Registered Phone Number" required/>
+        <input type="tel" id="Phone" name="phone" placeholder="Enter Registered Phone Number" pattern="\+63 9\d.{10}" required/>
 
         <label for="Reference">Reservation Reference <span>*</span></label>
         <input type="text" id="Reference" name="reference" placeholder="Enter Reference Code" required/>

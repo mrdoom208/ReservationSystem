@@ -30,6 +30,7 @@ public class ReservationService {
         this.settingsService = settingsService;
     }
 
+    /*   =----------- AUTO DELETE ----------------
     @Scheduled(fixedRate = 60000)  // Runs every 1 minute
     public void checkAndUpdateReservationStatuses() {
         long autoCancelMinutes = settingsService.getAutoCancelMinutes(); // dynamic
@@ -63,7 +64,9 @@ public class ReservationService {
 
             }
         }
-    }
+    }*/
+
+
     @Scheduled(cron = "0 0 2 * * ?")
     public void deleteOldReservations() {
         int months = settingsService.getAutoDeleteMonths();

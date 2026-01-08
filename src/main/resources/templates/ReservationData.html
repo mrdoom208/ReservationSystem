@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns="http://www.w3.org/1999/html">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -22,7 +22,8 @@
     </div>
 
     <div class="navbar-right">
-        <button class="navbar-btn" onclick="openModal()">Change Details</button>
+        <button class="navbar-btn" id="cancelbtn" onclick="openCancelModal()">Cancel Reservation</button>
+        <button class="navbar-btn" id="changebtn" onclick="openModal()">Change Details</button>
         <a href="/logout" class="navbar-btn">Logout</a>
     </div>
 
@@ -32,7 +33,8 @@
 
 <!-- Mobile Menu -->
 <div class="navbar-mobile-menu" id="mobileMenu">
-    <button class="navbar-btn" onclick="openModal(); toggleMobileMenu();">Change Details</button>
+    <button class="navbar-btn" id="cancelbtnmobile" onclick="openCancelModal(); toggleMobileMenu();">Cancel Reservation</button>
+    <button class="navbar-btn" id="changebtnmobile" onclick="openModal(); toggleMobileMenu();">Change Details</button>
     <a href="/logout" class="navbar-btn">Logout</a>
 </div>
 
@@ -72,14 +74,16 @@
                 </div>
                 <div class="info-item">
                     Status
-                    <span th:text="${status}"
+                    <span id="statusLabel" th:text="${status}"
                           th:class="'status-'+ ${#strings.replace(status,' ','-')}">Loading...</span>
                 </div>
             </div>
 
             <div class="timer-section">
-                <div class="countdown" id="countup">00:00:00</div>
-                <div class="estimated-time">
+                <div class="countdown"
+                     id="countup"
+                     th:classappend="${status} != null ? ${status} : ''">00:00:00</div>
+                <div class="estimated-time" >
                     Created: <span th:text="${created}">00:00:00</span>
                 </div>
             </div>
@@ -89,7 +93,7 @@
     <div class="progress-bar">
         <div class="progress-segment"
              th:each="i : ${#numbers.sequence(1,24)}"
-             th:classappend="${i <= activeSegments} ? 'active'">
+             th:classappend="${i <= activeSegments} ? 'active status-' + ${status} : ''">
         </div>
     </div>
 </div>
@@ -136,7 +140,7 @@
 
                     <div class="form-group">
                         <label class="form-label" for="preferredSpace">Preferred Space</label>
-                        <select id="preferredSpace" name="preferredSpace" class="form-select" required>
+                        <select id="preferredSpace" name="preferredSpace" class="form-select">
                             <option value="">Select...</option>
                             <option value="Indoor">Indoor</option>
                             <option value="Outdoor">Outdoor</option>
@@ -152,6 +156,29 @@
         </div>
     </div>
 </div>
+<!-- CANCEL RESERVATION MODAL -->
+<div class="modal-overlay" id="cancelModalOverlay" onclick="closeCancelModalOnOverlay(event)">
+    <div class="modal-container" onclick="event.stopPropagation()">
+        <div class="modal-header">
+            <button class="close-button" onclick="closeCancelModal()">&times;</button>
+            <div class="modal-title">Cancel Reservation</div>
+            <div class="modal-subtitle">Romantic Baboy Korean Grill</div>
+        </div>
+
+        <div class="modal-body">
+            <p>Are you sure you want to cancel this reservation?</p>
+        </div>
+
+        <div class="modal-footer">
+            <button type="button" class="btn btn-cancel" onclick="closeCancelModal()">No, Keep Reservation</button>
+            <form th:action="@{/cancelReservation}" method="post" style="display:inline;">
+                <input type="hidden" name="reference" th:value="${reference}">
+                <button type="submit" class="btn btn-submit">Yes, Cancel</button>
+            </form>
+        </div>
+    </div>
+</div>
+
 
 <script th:inline="javascript">
     // Mobile menu toggle
@@ -170,19 +197,36 @@
         }
     });
 
-    const status = [[${status}]];
+
+    let currentStatus = [[${status}]];
+    let status = currentStatus;
     const pendingTimeStr = [[${pendingDateTime}]];
     const completeTimeStr = [[${completeDateTime}]];
+    const cancelledTimeStr = [[${cancelledDateTime}]];
+    const noShowTimeStr = [[${noShowDateTime}]];
     const startTime = new Date(pendingTimeStr);
     const countupElement = document.getElementById("countup");
+
 
     function updateCountUp() {
         let diff;
 
         if(status === 'Complete' && completeTimeStr) {
-            const completeTime = new Date(completeTimeStr);
-            diff = completeTime - startTime;
-        } else {
+            const finishTime = new Date(completeTimeStr);
+            diff = finishTime - startTime;
+            clearInterval(checkReservationStatus);
+        }
+        else if(status === 'Cancelled' && cancelledTimeStr) {
+            const finishTime = new Date(cancelledTimeStr);
+            diff = finishTime - startTime;
+            clearInterval(checkReservationStatus);
+        }
+        else if(status === 'No Show' && noShowTimeStr) {
+            const finishTime = new Date(noShowTimeStr);
+            diff = finishTime - startTime;
+            clearInterval(checkReservationStatus);
+        }
+        else {
             const now = new Date();
             diff = now - startTime;
         }
@@ -197,7 +241,7 @@
             String(seconds).padStart(2,'0');
     }
 
-    if(status !== 'Complete') {
+    if(status !== 'Complete' && status !== 'Cancelled' && status !== 'No Show') {
         setInterval(updateCountUp, 1000);
     }
 
@@ -217,6 +261,113 @@
     }
 
     formatPhoneDisplay();
+
+
+    const reservationId = [[${reservationId}]];
+
+    const cancelBtn = document.getElementById('cancelbtn');
+    const changeBtn = document.getElementById('changebtn');
+    const cancelBtnMobile = document.getElementById('cancelbtnmobile');
+    const changeBtnMobile = document.getElementById('changebtnmobile');
+
+    function updateButtons(status) {
+        const isPending = status === "Pending";
+
+        cancelBtn.style.display = isPending ? "inline-flex" : "none";
+        changeBtn.style.display = isPending ? "inline-flex" : "none";
+        cancelBtnMobile.style.display = isPending ? "inline-flex" : "none";
+        changeBtnMobile.style.display = isPending ? "inline-flex" : "none";
+    }
+
+    function updateCountUpColor(status){
+        countupElement.classList.remove('Complete','Confirm','Pending','Cancelled','Seated','No.Show');
+        countupElement.classList.add(status);
+
+    }
+    let activeSegments = [[${activeSegments}]];
+
+
+    function updateProgressBar(status) {
+    const statusMap = {
+        'Pending': 6,
+        'Confirm': 12,
+        'Seated': 18,
+        'Complete': 24,
+        'Cancelled': 24
+    };
+    const activeSegments = statusMap[status] || 0;
+    // Get all progress segments
+    const segments = document.querySelectorAll('.progress-bar .progress-segment');
+
+
+    segments.forEach((segment, index) => {
+        const i = index + 1; // because querySelectorAll is 0-based
+
+        // Remove old classes
+        segment.classList.remove('active','status-Pending', 'status-Completed', 'status-Cancelled','status-Seated','status-Confirm','status-No.Show'); // list all possible status classes
+
+        // Add new classes if this segment should be active
+        if (i <= activeSegments) {
+            segment.classList.add('active');  // <-- this makes the segment "rise" or fill
+            if (status) {
+                segment.classList.add(`status-${status}`);
+            }
+        }
+    });
+    }
+
+    function updateStatusLabel(status) {
+        const statusLabel = document.getElementById('statusLabel');
+
+        if (!statusLabel) return;
+
+        // Remove any old status-* classes dynamically
+        statusLabel.classList.forEach(cls => {
+            if (cls.startsWith('status-')) {
+                statusLabel.classList.remove(cls);
+            }
+        });
+
+        // Add new status class
+        statusLabel.classList.add(`status-${status.replace(/\s+/g, '-')}`);
+
+        // Update text
+        statusLabel.textContent = status;
+    }
+
+
+    function checkReservationStatus() {
+        fetch(`/reservation/status?reservationId=${reservationId}`)
+            .then(res => res.json())
+            .then(data => {
+                if (data.status !== currentStatus) {
+                    console.log("Status changed:", data.status);
+                    currentStatus = data.status;
+                    updateButtons(currentStatus);
+                    updateCountUpColor(currentStatus);
+                    updateProgressBar(currentStatus);
+                    updateStatusLabel(currentStatus);
+                    updateCountUp();
+
+                    // Stop polling when final state reached
+                    if (
+                        currentStatus === "Complete" ||
+                        currentStatus === "Cancelled" ||
+                        currentStatus === "No Show"
+                    ) {
+                        clearInterval(statusInterval);
+                    }
+                }
+            })
+            .catch(err => console.error("Status check failed", err));
+    }
+
+    // Initial state
+    updateButtons(currentStatus);
+
+    // Poll every 10 seconds
+    const statusInterval = setInterval(checkReservationStatus, 10000);
+
 </script>
 
 <script>
@@ -297,6 +448,31 @@
     submitBtn.addEventListener('mouseleave', function() {
         this.style.transform = '';
     });
+</script>
+<script>
+    function openCancelModal() {
+        document.getElementById('cancelModalOverlay').classList.add('active');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeCancelModal() {
+        document.getElementById('cancelModalOverlay').classList.remove('active');
+        document.body.style.overflow = 'auto';
+    }
+
+    function closeCancelModalOnOverlay(event) {
+        if (event.target === event.currentTarget) {
+            closeCancelModal();
+        }
+    }
+
+    // Optional: close on Escape key
+    document.addEventListener('keydown', function(event) {
+        if (event.key === 'Escape') {
+            closeCancelModal();
+        }
+    });
+
 </script>
 </body>
 </html>

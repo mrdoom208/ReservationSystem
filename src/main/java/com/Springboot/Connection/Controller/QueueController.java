@@ -1,11 +1,18 @@
 package com.Springboot.Connection.Controller;
 
+import com.Springboot.Connection.Config.WebSocketBroadcaster;
 import com.Springboot.Connection.dto.WebUpdateDTO;
+import com.Springboot.Connection.model.Notification;
 import com.Springboot.Connection.model.Reservation;
+import com.Springboot.Connection.repository.NotificationRepository;
 import com.Springboot.Connection.repository.ReservationRepository;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.messaging.simp.user.SimpSession;
+import org.springframework.messaging.simp.user.SimpSubscription;
+import org.springframework.messaging.simp.user.SimpUser;
+import org.springframework.messaging.simp.user.SimpUserRegistry;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -13,10 +20,12 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import java.security.Principal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 import java.util.Map;
 
 @Controller
@@ -24,6 +33,14 @@ public class QueueController {
 
     @Autowired
     private ReservationRepository reservationRepository;
+    @Autowired
+    private NotificationRepository notificationRepository;
+
+    @Autowired
+    private WebSocketBroadcaster broadcaster;
+
+    @Autowired
+    private SimpUserRegistry simpUserRegistry;
     
     @Autowired
     SimpMessagingTemplate messagingTemplate;
@@ -65,6 +82,9 @@ public class QueueController {
 
     @GetMapping("/queue")
     public String queuePage(HttpSession session, Model model) {
+        String account = (String) session.getAttribute("reference"); // Spring Security username
+
+        // Send all pending notifications
         String phone = (String) session.getAttribute("phone");
         String reference =(String) session.getAttribute("reference");
 
@@ -206,6 +226,42 @@ public class QueueController {
         }
         return "redirect:/queue"; // Redirect after successful update
     }
+    @PostMapping("/confirmReservation")
+    public String confirmReservation(HttpSession session) {
+        String phone = (String) session.getAttribute("phone");
+        String reference = (String) session.getAttribute("reference");
+
+        if (phone == null || reference == null) {
+            // session expired or user not logged in
+            return "redirect:/loginpage";
+        }
+
+        Reservation reservation = reservationRepository.findByCustomerPhoneAndReference(phone, reference);
+        if (reservation != null) {
+            // Update the customer name
+            reservation.setStatus("Confirm");
+            reservationRepository.save(reservation);
+
+            WebUpdateDTO dto = new WebUpdateDTO();
+
+            dto.setCode("CONFIRM_RESERVATION");
+            dto.setMessage(
+                    "Reservation from " + reservation.getCustomer().getName()
+                            + " (" + reservation.getPax() + " pax)"
+                            + " | Ref: " + reservation.getReference()
+                            + " has been confirmed"
+            );
+            dto.setPhone(reservation.getCustomer().getPhone());
+            dto.setReference(reservation.getReference());
+            dto.setPax(reservation.getPax());
+            dto.setCustomerName(reservation.getCustomer().getName());
+
+            messagingTemplate.convertAndSend("/topic/forms", dto);
+
+        }
+        return "redirect:/queue"; // Redirect after successful update
+    }
+
 
     @GetMapping("/reservation/status")
     @ResponseBody
@@ -216,6 +272,17 @@ public class QueueController {
                 .orElseThrow();
 
         return Map.of("status", reservation.getStatus());
+    }
+
+    @GetMapping("/pendingNotifications")
+    @ResponseBody
+    public List<Notification> getPendingNotifications(@RequestParam String reference) {
+        List<Notification> pending = notificationRepository.findByAccountAndSentFalse(reference);
+        for (Notification n : pending) {
+            n.setSent(true);
+            notificationRepository.save(n);
+        }
+        return pending;
     }
 
 

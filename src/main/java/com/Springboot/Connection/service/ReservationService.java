@@ -30,19 +30,19 @@ public class ReservationService {
         this.settingsService = settingsService;
     }
 
-    /*   =----------- AUTO DELETE ----------------
+    //  =----------- AUTO DELETE ----------------
     @Scheduled(fixedRate = 60000)  // Runs every 1 minute
     public void checkAndUpdateReservationStatuses() {
         long autoCancelMinutes = settingsService.getAutoCancelMinutes(); // dynamic
 
         System.out.println(autoCancelMinutes);
         System.out.println(settingsService.getAutoDeleteMonths());
-        List<Reservation> reservations = reservationRepository.findAllByStatus("Pending");
+        List<Reservation> reservations = reservationRepository.findAllByStatus("Confirm");
 
         for (Reservation reservation : reservations) {
-            if (Duration.between(reservation.getReservationPendingtime(), LocalTime.now()).toMinutes() > autoCancelMinutes) {
-                reservation.setStatus("Cancelled");
-                reservation.setReservationCancelledtime(LocalTime.now());
+            if (Duration.between(reservation.getReservationConfirmtime(), LocalTime.now()).toMinutes() > autoCancelMinutes) {
+                reservation.setStatus("No Show");
+                reservation.setReservationNoshowtime(LocalTime.now());
                 reservation.setRevenue(BigDecimal.ZERO);
                 reservationRepository.save(reservation);
 
@@ -57,14 +57,13 @@ public class ReservationService {
                 );
                 dto.setPhone(reservation.getCustomer().getPhone());
                 dto.setReference(reservation.getReference());
-                System.out.println(dto.getCode());
 
                 messagingTemplate.convertAndSend("/topic/forms",dto);
                 System.out.println(dto.getCode());
 
             }
         }
-    }*/
+    }
 
 
     @Scheduled(cron = "0 0 2 * * ?")

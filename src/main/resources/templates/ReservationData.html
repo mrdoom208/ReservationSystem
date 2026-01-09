@@ -23,11 +23,11 @@
     </div>
 
     <div class="navbar-right">
-        <button onclick="openSeatingModal()" class="navbar-btn">
-            Show Seating Confirmation Modal
+        <button onclick="openSeatingModal()" class="navbar-btn-active" id="showConfirm">
+            Confirm
             <span class="notification-dot" id="seatingNotification"></span>
         </button>
-        <button class="navbar-btn" id="cancelbtn" onclick="openCancelModal()">Cancel Reservation</button>
+        <button class="navbar-btn" id="cancelbtn" onclick="openCancelModal()">Cancel</button>
         <button class="navbar-btn" id="changebtn" onclick="openModal()">Change Details</button>
         <a href="/logout" class="navbar-btn">Logout</a>
     </div>
@@ -41,6 +41,10 @@
 
 <!-- Mobile Menu -->
 <div class="navbar-mobile-menu" id="mobileMenu">
+    <button onclick="openSeatingModal()" id="showConfirmMobile" class="navbar-btn">
+        Confirm Reservation
+        <span class="notification-dot"></span>
+    </button>
     <button class="navbar-btn" id="cancelbtnmobile" onclick="openCancelModal(); toggleMobileMenu();">Cancel Reservation</button>
     <button class="navbar-btn" id="changebtnmobile" onclick="openModal(); toggleMobileMenu();">Change Details</button>
     <a href="/logout" class="navbar-btn">Logout</a>
@@ -68,7 +72,7 @@
                     Reference
                     <span th:text="${reference}">Loading...</span>
                 </div>
-                <div class="info-item">
+                <div class="info-item" id="queue">
                     Queue
                     <span th:text="${queueNumber}">Loading...</span>
                 </div>
@@ -195,7 +199,7 @@
         <div class="seating-modal-body">
             <h2 class="seating-modal-title">Your Table is Ready!</h2>
             <p class="seating-modal-message">
-                Dear valued guest, your reserved table is now ready. Kindly confirm if you are ready or go to our Restaurant and Show this
+                Dear valued guest, your reserved table is now ready. Kindly confirm if you are ready or go to our restaurant and show this
             </p>
 
             <div class="seating-modal-actions">
@@ -214,6 +218,8 @@
 </div>
 
 <script th:inline="javascript">
+        let currentStatus = '[[${status}]]';
+
         var stompClient = Stomp.client('ws://localhost:8080/ws');
 
         // Thymeleaf replaces [[${reference}]] with the actual string value
@@ -228,13 +234,16 @@
                 console.log('Message received on web client:');
                 openSeatingModal();
             });
-                fetch(`/pendingNotifications?reference=${reference}`)
-            .then(res => res.json())
-            .then(data => {
-                data.forEach(notification => {
-                    console.log('Offline message received:', notification);
-                    openSeatingModal();
-                });
+                if(currentStatus === "Pending"){
+                    fetch(`/pendingNotifications?reference=${reference}`)
+                    .then(res => res.json())
+                    .then(data => {
+                    data.forEach(notification => {
+                        console.log('Offline message received:', notification);
+                        openSeatingModal();
+                        notificationIcon();
+                    });
+                }
             });
         });
 
@@ -326,10 +335,11 @@
     const changeBtn = document.getElementById('changebtn');
     const cancelBtnMobile = document.getElementById('cancelbtnmobile');
     const changeBtnMobile = document.getElementById('changebtnmobile');
+    const queueCount = document.getElementById('queue');
 
     function updateButtons(status) {
         const isPending = status === "Pending";
-
+        queueCount.style.display = isPending ? "inline-flex" : "none";
         cancelBtn.style.display = isPending ? "inline-flex" : "none";
         changeBtn.style.display = isPending ? "inline-flex" : "none";
         cancelBtnMobile.style.display = isPending ? "inline-flex" : "none";
@@ -350,7 +360,8 @@
         'Confirm': 12,
         'Seated': 18,
         'Complete': 24,
-        'Cancelled': 24
+        'Cancelled': 24,
+        'No Show' : 24
     };
     const activeSegments = statusMap[status] || 0;
     // Get all progress segments
@@ -546,9 +557,16 @@
             const modal = document.getElementById('seatingModalOverlay');
             modal.classList.remove('active');
             document.body.style.overflow = 'auto';
-            document.getElementById('seatingNotification').style.display = 'inline-block';
-            document.getElementById('mobileMenuNotification').style.display = 'inline-block';
         }
+
+        function notificationIcon(){
+            document.getElementById('showConfirm').style.display = 'inline-block';
+            document.getElementById('showConfirmMobile').style.display = 'inline-block';
+            document.querySelectorAll('.notification-dot').forEach(dot => {
+            dot.style.display = 'inline-block';
+            });
+        }
+
 
         // Confirm seating
         function confirmSeating() {

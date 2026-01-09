@@ -37,6 +37,8 @@ public class QueueController {
     @Autowired
     private NotificationRepository notificationRepository;
 
+
+
     @Autowired
     private WebSocketBroadcaster broadcaster;
 
@@ -45,6 +47,7 @@ public class QueueController {
     
     @Autowired
     SimpMessagingTemplate messagingTemplate;
+
 
     @Autowired
     SmsService smsService;
@@ -191,6 +194,13 @@ public class QueueController {
             reservationRepository.save(reservation); // save the reservation (cascades to customer if mapped)
             session.setAttribute("phone", customerPhone);
 
+            WebUpdateDTO dto = new WebUpdateDTO();
+            dto.setPax(reservation.getPax());
+            dto.setCustomerName(customerName);
+            dto.setCode("CHANGED_RESERVATION");
+            dto.setReference(reservation.getReference());
+            dto.setMessage("Customer "+dto.getCustomerName()+" has modified their reservation "+dto.getReference()+" details.");
+            messagingTemplate.convertAndSend("/topic/forms",dto);
 
 
         }
@@ -257,6 +267,12 @@ public class QueueController {
             reservation.setReservationConfirmtime(LocalTime.now());
             reservationRepository.save(reservation);
 
+            List<Notification> pending = notificationRepository.findByAccountAndSentFalse(reference);
+            for (Notification n : pending) {
+                n.setSent(true);
+                notificationRepository.save(n);
+            }
+
             WebUpdateDTO dto = new WebUpdateDTO();
 
             dto.setCode("CONFIRM_RESERVATION");
@@ -296,7 +312,7 @@ public class QueueController {
     public List<Notification> getPendingNotifications(@RequestParam String reference) {
         List<Notification> pending = notificationRepository.findByAccountAndSentFalse(reference);
         for (Notification n : pending) {
-            n.setSent(true);
+            n.setSent(false);
             notificationRepository.save(n);
         }
         return pending;

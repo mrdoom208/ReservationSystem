@@ -6,6 +6,7 @@ import com.Springboot.Connection.model.Notification;
 import com.Springboot.Connection.model.Reservation;
 import com.Springboot.Connection.repository.NotificationRepository;
 import com.Springboot.Connection.repository.ReservationRepository;
+import com.Springboot.Connection.service.SmsService;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -44,6 +45,9 @@ public class QueueController {
     
     @Autowired
     SimpMessagingTemplate messagingTemplate;
+
+    @Autowired
+    SmsService smsService;
 
     @PostMapping("/login")
     public String login(@RequestParam String phone,@RequestParam String reference, HttpSession session) {
@@ -187,6 +191,8 @@ public class QueueController {
             reservationRepository.save(reservation); // save the reservation (cascades to customer if mapped)
             session.setAttribute("phone", customerPhone);
 
+
+
         }
         return "redirect:/queue"; // Redirect after successful update
     }
@@ -205,6 +211,7 @@ public class QueueController {
         if (reservation != null) {
             // Update the customer name
             reservation.setStatus("Cancelled");
+            reservation.setReservationCancelledtime(LocalTime.now());
             reservationRepository.save(reservation);
 
             WebUpdateDTO dto = new WebUpdateDTO();
@@ -220,6 +227,13 @@ public class QueueController {
             dto.setReference(reservation.getReference());
             dto.setPax(reservation.getPax());
             dto.setCustomerName(reservation.getCustomer().getName());
+
+            String recipient = reservation.getCustomer().getPhone();
+            String details = "Hello "+reservation.getCustomer().getName()+", your reservation "+reservation.getReference()+" has been cancelled.\n" +
+                    "If you need assistance or wish to rebook, please contact us. Thank you.\n";
+
+            smsService.sendSms(recipient,details);
+
 
             messagingTemplate.convertAndSend("/topic/forms", dto);
 
@@ -240,6 +254,7 @@ public class QueueController {
         if (reservation != null) {
             // Update the customer name
             reservation.setStatus("Confirm");
+            reservation.setReservationConfirmtime(LocalTime.now());
             reservationRepository.save(reservation);
 
             WebUpdateDTO dto = new WebUpdateDTO();
@@ -251,6 +266,7 @@ public class QueueController {
                             + " | Ref: " + reservation.getReference()
                             + " has been confirmed"
             );
+
             dto.setPhone(reservation.getCustomer().getPhone());
             dto.setReference(reservation.getReference());
             dto.setPax(reservation.getPax());
@@ -273,6 +289,7 @@ public class QueueController {
 
         return Map.of("status", reservation.getStatus());
     }
+
 
     @GetMapping("/pendingNotifications")
     @ResponseBody

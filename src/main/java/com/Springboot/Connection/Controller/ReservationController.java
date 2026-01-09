@@ -6,6 +6,7 @@ import com.Springboot.Connection.model.Customer;
 import com.Springboot.Connection.model.Reservation;
 import com.Springboot.Connection.repository.CustomerRepository;
 import com.Springboot.Connection.repository.ReservationRepository;
+import com.Springboot.Connection.service.SmsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -19,6 +20,7 @@ import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.LocalTime;
 
+
 @Controller
 public class ReservationController {
     @Autowired
@@ -30,6 +32,9 @@ public class ReservationController {
 
     @Autowired
     private SimpMessagingTemplate messagingTemplate;
+
+    @Autowired
+    private SmsService smsService;
 
     @RequestMapping("/")
     public String showForm() {
@@ -92,11 +97,19 @@ public class ReservationController {
         dto.setCustomerName(reservation.getCustomer().getName());
         dto.setPax(reservation.getPax());
 
+        String details =
+                "Hello " + reservation.getCustomer().getName() + ", your reservation has been successfully made.\n"+
+                        "Reference: " + reservation.getReference() + "\n" +
+                        "Party Size: " + dto.getPax() + "\n" +
+                        "We look forward to welcoming you!";
 
-
+        smsService.sendSms(reservation.getCustomer().getPhone(),details);
+        String smsResponse = smsService.sendSms(reservation.getCustomer().getPhone(), details);
+        System.out.println("SMS Response: " + smsResponse);
+        System.out.println(details);
         messagingTemplate.convertAndSend("/topic/forms", dto);
-        System.out.println(dto.getCode()+dto.getMessage());
 
+        System.out.println(dto.getCode()+dto.getMessage());
 
         return "redirect:/loginpage?newreservation=New Reservation Created Successfully";
     }

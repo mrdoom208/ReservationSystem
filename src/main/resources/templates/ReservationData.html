@@ -218,7 +218,7 @@
 </div>
 
 <script th:inline="javascript">
-        let currentStatus = '[[${status}]]';
+        let currentStatus = [[${status}]];
 
         var stompClient = Stomp.client('wss://reservationsystem-2426.onrender.com/ws');
 
@@ -274,7 +274,6 @@
     });
 
 
-    let currentStatus = [[${status}]];
     let status = currentStatus;
     const pendingTimeStr = [[${pendingDateTime}]];
     const completeTimeStr = [[${completeDateTime}]];

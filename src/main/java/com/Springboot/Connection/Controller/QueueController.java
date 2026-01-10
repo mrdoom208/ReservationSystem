@@ -96,13 +96,13 @@ public class QueueController {
 
         // Send all pending notifications
         String phone = (String) session.getAttribute("phone");
-        String reference =(String) session.getAttribute("reference");
+        String reference = (String) session.getAttribute("reference");
 
         if (phone == null) {
             return "redirect:/loginpage";
-
         }
-        Reservation reservation = reservationRepository.findByCustomerPhoneAndReference(phone,reference);
+
+        Reservation reservation = reservationRepository.findByCustomerPhoneAndReference(phone, reference);
 
         if (reservation != null) {
             long position = reservationRepository.countAhead(reservation.getReservationPendingtime()) + 1;
@@ -111,26 +111,34 @@ public class QueueController {
             long hours = estimatedMinutes / 60;
             long minutes = estimatedMinutes % 60;
             String estimatedTimeStr = String.format("%02d:%02d", hours, minutes);
+
             LocalDate pendingDate = reservation.getDate();   // e.g., 2025-12-12
             LocalTime pendingTime = reservation.getReservationPendingtime();   // e.g., 23:58:00
             LocalDateTime pendingDateTime = LocalDateTime.of(pendingDate, pendingTime);
+
             LocalDateTime completeDateTime = null;
             LocalDateTime cancelledDateTime = null;
             LocalDateTime NoShowDateTime = null;
-            if (reservation.getReservationCompletetime() != null){
-                completeDateTime = LocalDateTime.of(reservation.getDate(),reservation.getReservationCompletetime());
+
+            if (reservation.getReservationCompletetime() != null) {
+                completeDateTime = LocalDateTime.of(reservation.getDate(), reservation.getReservationCompletetime());
             }
-            if (reservation.getReservationCancelledtime() != null){
-                cancelledDateTime = LocalDateTime.of(reservation.getDate(),reservation.getReservationCancelledtime());
+            if (reservation.getReservationCancelledtime() != null) {
+                cancelledDateTime = LocalDateTime.of(reservation.getDate(), reservation.getReservationCancelledtime());
             }
-            if (reservation.getReservationNoshowtime() != null){
-                NoShowDateTime = LocalDateTime.of(reservation.getDate(),reservation.getReservationNoshowtime());
+            if (reservation.getReservationNoshowtime() != null) {
+                NoShowDateTime = LocalDateTime.of(reservation.getDate(), reservation.getReservationNoshowtime());
             }
 
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MMMM dd, yyyy  hh:mm a");
-            String readablePendingDateTime = pendingDateTime.format(formatter);
+            // Format for display with timezone awareness
+            // Assuming your server times are in UTC, convert to ISO 8601 format with 'Z' indicator
+            DateTimeFormatter isoFormatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
 
-            model.addAttribute("reservationId",reservation.getId());
+            // For the "Created" display, format it nicely but client will convert to local
+            DateTimeFormatter displayFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+            String createdDisplay = pendingDateTime.format(displayFormatter);
+
+            model.addAttribute("reservationId", reservation.getId());
             model.addAttribute("customerName", reservation.getCustomer().getName());
             model.addAttribute("customerPhone", reservation.getCustomer().getPhone());
             model.addAttribute("reference", reservation.getReference());
@@ -138,12 +146,18 @@ public class QueueController {
             model.addAttribute("seatingCapacity", reservation.getPax());
             model.addAttribute("preferredSpace", reservation.getPrefer() != null ? reservation.getPrefer() : "");
             model.addAttribute("status", reservation.getStatus());
-            model.addAttribute("pendingDateTime", pendingDateTime.toString());
-            model.addAttribute("completeDateTime", reservation.getReservationCompletetime() != null ? completeDateTime.toString() : "");
-            model.addAttribute("cancelledDateTime", reservation.getReservationCancelledtime() != null ? cancelledDateTime.toString() : "");
-            model.addAttribute("noShowDateTime", reservation.getReservationNoshowtime() != null ? NoShowDateTime.toString() : "");
-            model.addAttribute("created", readablePendingDateTime);
 
+            // Send as ISO format strings - JavaScript will handle timezone conversion
+            model.addAttribute("pendingDateTime", pendingDateTime.format(isoFormatter));
+            model.addAttribute("completeDateTime",
+                    reservation.getReservationCompletetime() != null ? completeDateTime.format(isoFormatter) : "");
+            model.addAttribute("cancelledDateTime",
+                    reservation.getReservationCancelledtime() != null ? cancelledDateTime.format(isoFormatter) : "");
+            model.addAttribute("noShowDateTime",
+                    reservation.getReservationNoshowtime() != null ? NoShowDateTime.format(isoFormatter) : "");
+
+            // Send the created time in simple format - JS will convert to local timezone
+            model.addAttribute("created", createdDisplay);
 
             int activeSegments = switch (reservation.getStatus()) {
                 case "Pending"  -> 6;
@@ -154,6 +168,7 @@ public class QueueController {
                 default -> 0;
             };
             model.addAttribute("activeSegments", activeSegments);
+
         } else {
             // Default placeholders
             model.addAttribute("customerName", "Loading...");
@@ -163,7 +178,7 @@ public class QueueController {
             model.addAttribute("seatingCapacity", "Loading...");
             model.addAttribute("preferredSpace", "Loading...");
             model.addAttribute("estimatedTime", "Loading...");
-            }
+        }
 
         return "ReservationData";
     }

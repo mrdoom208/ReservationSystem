@@ -240,15 +240,21 @@
 
         if (currentStatus === "Pending") {
             fetch(`/pendingNotifications?reference=${reference}`)
-                .then(res => res.json())
+                .then(res => {
+                    if (!res.ok) throw new Error("Server returned status " + res.status);
+                    return res.json();
+                })
                 .then(data => {
+                    if (!Array.isArray(data)) {
+                        console.error("Expected array but got:", data);
+                        return;
+                    }
                     data.forEach(notification => {
-                        console.log('Offline message received:', notification);
-                        openSeatingModal();
-                        notificationIcon();
+                        console.log("Notification:", notification);
                     });
                 })
-                .catch(err => console.error(err));
+                .catch(err => console.error("Failed to fetch pending notifications:", err));
+
         }
     },
     function (error) {

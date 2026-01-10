@@ -20,8 +20,6 @@ public class Notification {
     private long timestamp = System.currentTimeMillis();
 
     // Store any serialized DTO info if needed
-    @Lob
-    private String payload;
 
     // getters and setters
     public Long getId() { return id; }
@@ -33,8 +31,6 @@ public class Notification {
     public void setMessage(String message) { this.message = message; }
     public boolean isSent() { return sent; }
     public void setSent(boolean sent) { this.sent = sent; }
-    public String getPayload() { return payload; }
-    public void setPayload(String payload) { this.payload = payload; }
     public long getTimestamp() { return timestamp; }
     public void setTimestamp(long timestamp) { this.timestamp = timestamp; }
 }

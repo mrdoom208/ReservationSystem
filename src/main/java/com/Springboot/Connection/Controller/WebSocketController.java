@@ -34,7 +34,6 @@ public class WebSocketController {
         notification.setMessage("Your table is ready!"); // customize message
         notification.setTimestamp(1);
         notification.setCode("TABLE_READY"); // not read yet
-        notification.setPayload("HATDOG");
         notificationRepository.save(notification);
         System.out.println("Notification saved to DB for: " + dto.getReference());
         // Optional: broadcast to all clients

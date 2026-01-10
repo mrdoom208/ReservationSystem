@@ -1,6 +1,7 @@
 package com.Springboot.Connection.Controller;
 
 import com.Springboot.Connection.Config.WebSocketBroadcaster;
+import com.Springboot.Connection.dto.NotificationDTO;
 import com.Springboot.Connection.dto.WebUpdateDTO;
 import com.Springboot.Connection.model.Notification;
 import com.Springboot.Connection.model.Reservation;
@@ -9,6 +10,7 @@ import com.Springboot.Connection.repository.ReservationRepository;
 import com.Springboot.Connection.service.SmsService;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.messaging.simp.user.SimpSession;
 import org.springframework.messaging.simp.user.SimpSubscription;
@@ -28,6 +30,7 @@ import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Controller
 public class QueueController {
@@ -308,14 +311,27 @@ public class QueueController {
 
 
     @GetMapping("/pendingNotifications")
-    @ResponseBody
-    public List<Notification> getPendingNotifications(@RequestParam String reference) {
-        List<Notification> pending = notificationRepository.findByAccountAndSentFalse(reference);
-        for (Notification n : pending) {
-            n.setSent(false);
-            notificationRepository.save(n);
+    public ResponseEntity<List<NotificationDTO>> getPendingNotifications(@RequestParam String reference) {
+        try {
+            List<Notification> pending = notificationRepository.findByAccountAndSentFalse(reference);
+
+            // Convert to DTOs (safe JSON)
+            List<NotificationDTO> dtoList = pending.stream()
+                    .map(NotificationDTO::new)
+                    .collect(Collectors.toList());
+
+            // Mark as sent
+            for (Notification n : pending) {
+                n.setSent(true);
+            }
+            notificationRepository.saveAll(pending);
+
+            return ResponseEntity.ok(dtoList);
+
+        } catch (Exception e) {
+            e.printStackTrace(); // server logs
+            return ResponseEntity.status(500).build();
         }
-        return pending;
     }
 
 

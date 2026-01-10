@@ -220,32 +220,42 @@
 <script th:inline="javascript">
         let currentStatus = '[[${status}]]';
 
-        var stompClient = Stomp.client('ws://localhost:8080/ws');
+        var stompClient = Stomp.client('wss://reservationsystem-2426.onrender.com/ws');
 
         // Thymeleaf replaces [[${reference}]] with the actual string value
         const reference = /*[[${reference}]]*/ "";
 
         console.log('WS connected for account:', reference);
 
-        stompClient.connect({}, function(frame) {
-            console.log('Connected: ' + frame);
+        stompClient.connect(
+    {},
+    function (frame) {
+        console.log('Connected: ' + frame);
 
-            stompClient.subscribe('/topic/account.' + reference, function(message) {
-                console.log('Message received on web client:');
-                openSeatingModal();
-            });
-                if(currentStatus === "Pending"){
-                    fetch(`/pendingNotifications?reference=${reference}`)
-                    .then(res => res.json())
-                    .then(data => {
+        stompClient.subscribe('/topic/account.' + reference, function (message) {
+            console.log('Message received:', message.body);
+            openSeatingModal();
+            notificationIcon();
+        });
+
+        if (currentStatus === "Pending") {
+            fetch(`/pendingNotifications?reference=${reference}`)
+                .then(res => res.json())
+                .then(data => {
                     data.forEach(notification => {
                         console.log('Offline message received:', notification);
                         openSeatingModal();
                         notificationIcon();
                     });
-                }
-            });
-        });
+                })
+                .catch(err => console.error(err));
+        }
+    },
+    function (error) {
+        console.error('STOMP connection failed:', error);
+    }
+);
+
 
     // Mobile menu toggle
     function toggleMobileMenu() {

@@ -221,6 +221,9 @@
     var stompClient = Stomp.client('wss://reservationsystem-ul0w.onrender.com/ws');
     stompClient.reconnect_delay = 5000;
 
+    let currentStatus = /*[[${status}]]*/ "";
+
+
     const reference = /*[[${reference}]]*/ "";
 
     console.log('WS connected for account:', reference);

@@ -337,7 +337,7 @@ public class QueueController {
 
             // Mark as sent
             for (Notification n : pending) {
-                n.setSent(true);
+                n.setSent(false);
             }
             notificationRepository.saveAll(pending);
 

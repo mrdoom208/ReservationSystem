@@ -218,48 +218,69 @@
 </div>
 
 <script th:inline="javascript">
-    let currentStatus = [[${status}]];
-
     var stompClient = Stomp.client('wss://reservationsystem-ul0w.onrender.com/ws');
+    stompClient.reconnect_delay = 5000;
 
-    // Thymeleaf replaces [[${reference}]] with the actual string value
     const reference = /*[[${reference}]]*/ "";
 
     console.log('WS connected for account:', reference);
 
-    stompClient.connect(
-        {},
-        function (frame) {
-            console.log('Connected: ' + frame);
+    if (!reference) {
+        console.error("Reference missing — WebSocket disabled");
+    } else {
 
-            stompClient.subscribe('/topic/account.' + reference, function (message) {
-                console.log('Message received:', message.body);
-                openSeatingModal();
-                notificationIcon();
-            });
+        let seatingShown = false;
 
-            if (currentStatus === "Pending") {
-                fetch(`/pendingNotifications?reference=${reference}`)
-                    .then(res => {
-                        if (!res.ok) throw new Error("Server returned status " + res.status);
-                        return res.json();
-                    })
-                    .then(data => {
-                        if (!Array.isArray(data)) {
-                            console.error("Expected array but got:", data);
-                            return;
-                        }
-                        data.forEach(notification => {
-                            console.log("Notification:", notification);
-                        });
-                    })
-                    .catch(err => console.error("Failed to fetch pending notifications:", err));
+        stompClient.connect(
+            {},
+            function (frame) {
+                console.log('Connected: ' + frame);
+
+                stompClient.subscribe('/topic/account.' + reference, function (message) {
+                    console.log('Message received:', message.body);
+
+                    if (!seatingShown) {
+                        openSeatingModal();
+                        notificationIcon();
+                        seatingShown = true;
+                    }
+                });
+
+                if (currentStatus === "Pending") {
+                    fetch(`/pendingNotifications?reference=${reference}`)
+                        .then(res => {
+                            if (!res.ok) {
+                                throw new Error("HTTP " + res.status);
+                            }
+                            return res.json();
+                        })
+                        .then(data => {
+                            if (!Array.isArray(data)) {
+                                console.error("Expected array but got:", data);
+                                return;
+                            }
+
+                            if (data.length > 0 && !seatingShown) {
+                                openSeatingModal();
+                                notificationIcon();
+                                seatingShown = true;
+                            }
+
+                            data.forEach(notification => {
+                                console.log("Notification:", notification);
+                            });
+                        })
+                        .catch(err =>
+                            console.error("Failed to fetch pending notifications:", err)
+                        );
+                }
+            },
+            function (error) {
+                console.error('STOMP connection failed:', error);
             }
-        },
-        function (error) {
-            console.error('STOMP connection failed:', error);
-        }
-    );
+        );
+    }
+
 
     // ===== TIMEZONE CONVERSION FUNCTIONS =====
     // Convert UTC time string to local Date object

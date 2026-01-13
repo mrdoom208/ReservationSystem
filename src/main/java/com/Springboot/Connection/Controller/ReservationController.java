@@ -103,10 +103,8 @@ public class ReservationController {
                         "Party Size: " + dto.getPax() + "\n" +
                         "We look forward to welcoming you!";
 
-        smsService.sendSms(reservation.getCustomer().getPhone(),details);
         String smsResponse = smsService.sendSms(reservation.getCustomer().getPhone(), details);
         System.out.println("SMS Response: " + smsResponse);
-        System.out.println(details);
         messagingTemplate.convertAndSend("/topic/forms", dto);
 
         System.out.println(dto.getCode()+dto.getMessage());

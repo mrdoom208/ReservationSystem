@@ -4,6 +4,7 @@ import com.Springboot.Connection.dto.WebUpdateDTO;
 import com.Springboot.Connection.model.Customer;
 import com.Springboot.Connection.model.Reservation;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -21,6 +22,12 @@ public class NotificationService {
 
     @Autowired
     private SimpMessagingTemplate messagingTemplate;
+
+    @Value("${spring.mail.username}")
+    private String gmailUsername;
+
+    @Value("${spring.mail.password}")
+    private String gmailPassword;
 
     /**
      * Sends SMS, Gmail, and WebSocket notification asynchronously.
@@ -42,6 +49,13 @@ public class NotificationService {
             System.out.println(reservation.getCustomer().getEmail());
             System.out.println(!customer.getEmail().isBlank()&&!customer.getEmail().isEmpty());
             if(!customer.getEmail().isBlank()&&!customer.getEmail().isEmpty()) {
+
+
+
+                System.out.println(gmailUsername+" ASDASDASD");
+                System.out.println(gmailPassword+" ASDASDASDSAD");
+
+
                 String subject = "Reservation Confirmation | Ref: " + reservation.getReference();
                 String emailBody = "Hi " + customer.getName() + ",\n\n" +
                         "Your reservation has been successfully made.\n" +

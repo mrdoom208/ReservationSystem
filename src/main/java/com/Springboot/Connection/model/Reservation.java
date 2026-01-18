@@ -33,6 +33,7 @@ public class Reservation {
     private BigDecimal revenue;
 
     private LocalTime reservationPendingtime;
+    private LocalTime reservationNotifiedtime;
     private LocalTime reservationConfirmtime;
     private LocalTime reservationCancelledtime;
     private LocalTime reservationSeatedtime;
@@ -108,6 +109,14 @@ public class Reservation {
 
     public void setReservationPendingtime(LocalTime reservationPendingtime) {
         this.reservationPendingtime = reservationPendingtime;
+    }
+
+    public LocalTime getReservationNotifiedtime() {
+        return reservationNotifiedtime;
+    }
+
+    public void setReservationNotifiedtime(LocalTime reservationNotifiedtime) {
+        this.reservationNotifiedtime = reservationNotifiedtime;
     }
 
     public LocalTime getReservationConfirmtime() {

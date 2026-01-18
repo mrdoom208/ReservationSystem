@@ -6,8 +6,14 @@ import com.Springboot.Connection.model.Customer;
 import com.Springboot.Connection.model.Reservation;
 import com.Springboot.Connection.repository.CustomerRepository;
 import com.Springboot.Connection.repository.ReservationRepository;
+import com.Springboot.Connection.service.NotificationService;
 import com.Springboot.Connection.service.SmsService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Primary;
+import org.springframework.core.task.TaskExecutor;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -19,6 +25,7 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.concurrent.CompletableFuture;
 
 
 @Controller
@@ -28,13 +35,18 @@ public class ReservationController {
     @Autowired
     private CustomerRepository customerRepository;
 
-
+    @Autowired
+    @Qualifier("reservationTaskExecutor")
+    private TaskExecutor taskExecutor;
 
     @Autowired
     private SimpMessagingTemplate messagingTemplate;
 
     @Autowired
     private SmsService smsService;
+
+    @Autowired
+    private NotificationService notificationService;
 
     @RequestMapping("/")
     public String showForm() {
@@ -65,8 +77,10 @@ public class ReservationController {
 
 
 
-    @ PostMapping("/reserve")
+    @PostMapping("/reserve")
     public String saveReservation(CustomerReservationDTO reservationDTO) {
+
+        // 1. Save customer and reservation (fast DB ops)
         Customer newCustomer = new Customer();
         newCustomer.setEmail(reservationDTO.getEmail());
         newCustomer.setName(reservationDTO.getName());
@@ -75,7 +89,7 @@ public class ReservationController {
 
         Reservation reservation = new Reservation();
         reservation.setPrefer(reservationDTO.getPrefer());
-        reservation.setReference(String.format("RSV-%05d", reservationRepository.count()+1));
+        reservation.setReference(String.format("RSV-%05d", reservationRepository.count() + 1));
         reservation.setPax(reservationDTO.getPax());
         reservation.setDate(LocalDate.now());
         reservation.setStatus("Pending");
@@ -83,7 +97,7 @@ public class ReservationController {
         reservation.setCustomer(newCustomer);
         reservationRepository.save(reservation);
 
-
+        // 2. Prepare DTO
         WebUpdateDTO dto = new WebUpdateDTO();
         dto.setCode("NEW_RESERVATION");
         dto.setMessage(
@@ -97,20 +111,16 @@ public class ReservationController {
         dto.setCustomerName(reservation.getCustomer().getName());
         dto.setPax(reservation.getPax());
 
-        String details =
-                "Hello " + reservation.getCustomer().getName() + ", your reservation has been successfully made.\n"+
-                        "Reference: " + reservation.getReference() + "\n" +
-                        "Party Size: " + dto.getPax() + "\n" +
-                        "We look forward to welcoming you!";
+        // 3. Run slow operations asynchronously
+        CompletableFuture.runAsync(() -> {
+            notificationService.notifyCustomer(newCustomer,reservation,dto);
+        },taskExecutor);
 
-        String smsResponse = smsService.sendSms(reservation.getCustomer().getPhone(), details);
-        System.out.println("SMS Response: " + smsResponse);
-        messagingTemplate.convertAndSend("/topic/forms", dto);
-
-        System.out.println(dto.getCode()+dto.getMessage());
-
+        // 4. Return immediately
         return "redirect:/loginpage?newreservation=New Reservation Created Successfully";
     }
+
+
 
 
 }

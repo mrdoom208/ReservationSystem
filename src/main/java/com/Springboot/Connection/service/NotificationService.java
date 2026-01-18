@@ -50,12 +50,6 @@ public class NotificationService {
             System.out.println(!customer.getEmail().isBlank()&&!customer.getEmail().isEmpty());
             if(!customer.getEmail().isBlank()&&!customer.getEmail().isEmpty()) {
 
-
-
-                System.out.println(gmailUsername+" ASDASDASD");
-                System.out.println(gmailPassword+" ASDASDASDSAD");
-
-
                 String subject = "Reservation Confirmation | Ref: " + reservation.getReference();
                 String emailBody = "Hi " + customer.getName() + ",\n\n" +
                         "Your reservation has been successfully made.\n" +

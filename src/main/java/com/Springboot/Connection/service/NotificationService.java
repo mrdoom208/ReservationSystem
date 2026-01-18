@@ -39,6 +39,8 @@ public class NotificationService {
             System.out.println("SMS Response: " + smsResponse);
 
             // 2️⃣ Gmail
+            System.out.println(reservation.getCustomer().getEmail());
+            System.out.println(!customer.getEmail().isBlank()&&!customer.getEmail().isEmpty());
             if(!customer.getEmail().isBlank()&&!customer.getEmail().isEmpty()) {
                 String subject = "Reservation Confirmation | Ref: " + reservation.getReference();
                 String emailBody = "Hi " + customer.getName() + ",\n\n" +

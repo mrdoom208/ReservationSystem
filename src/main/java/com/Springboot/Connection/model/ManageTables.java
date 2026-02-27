@@ -4,12 +4,9 @@
  */
 package com.Springboot.Connection.model;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.OneToMany;
+import jakarta.persistence.*;
 
+import java.sql.Time;
 import java.time.LocalTime;
 import java.util.List;
 
@@ -19,52 +16,54 @@ import java.util.List;
  */
 @Entity
 public class ManageTables {
-    
+
     @Id
-    @GeneratedValue(strategy=GenerationType.IDENTITY)        
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     Long id;
-    
-    
+    @Column(unique = true)
     String tableNo;
-    String status;
-    
-    LocalTime time;
     int capacity;
+    String status;
     String location;
-    String remarks;
-    
-    
+
+    LocalTime tablestarttime;
+    LocalTime tableendtime;
+
+
+
+
     @OneToMany(mappedBy = "table")
     private List<Reservation> reservations;
-    
-    
-    
-    
-    
+
+
+
+
+
     public Long getId(){return id;}
     public void setId(Long id){this.id = id;}
-    
+
     public String getTableNo(){return tableNo;}
     public void setTableNo(String tableNo){this.tableNo = tableNo;}
-    
+
     public String getStatus(){return status;}
     public void setStatus(String Status){this.status = Status;}
-    
-    
+
+
     public int getCapacity(){return capacity;}
     public void setCapacity(int Capacity){this.capacity = Capacity;}
-    
-    public LocalTime getTime(){return time;}
-    public void setTime(LocalTime Time){this.time = Time;}
-    
-    public String getRemarks(){return remarks;}
-    public void setRemarks(String Remarks){this.remarks = Remarks;}
+
+    public LocalTime getTablestarttime() {return tablestarttime;}
+    public void setTablestarttime(LocalTime tablestarttime) {this.tablestarttime = tablestarttime;}
+
+    public LocalTime getTableendtime() {return tableendtime;}
+    public void setTableendtime(LocalTime tableendtime) {this.tableendtime = tableendtime;}
 
     public String getLocation(){return location;}
     public void setLocation(String location){this.location = location;}
 
-    
-    
-   
-    
+    @Override
+    public String toString() {
+        return tableNo;
+    }
+
 }
